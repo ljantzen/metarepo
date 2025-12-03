@@ -16,10 +16,7 @@ impl<'a> ProjectRulesManager<'a> {
     pub fn load_project_rules(&self, project_name: &str) -> Result<RulesConfig> {
         // Try project-specific rules first
         if let Ok(project_rules) = self.load_project_specific_rules(project_name) {
-            println!(
-                "Using project-specific rules for {}",
-                project_name
-            );
+            println!("Using project-specific rules for {}", project_name);
             return Ok(project_rules);
         }
 
@@ -103,15 +100,9 @@ impl<'a> ProjectRulesManager<'a> {
             let has_specific_rules = project_path.join(".rules.yaml").exists();
 
             if has_specific_rules {
-                println!(
-                    "OK: {} - Has project-specific rules",
-                    project_name
-                );
+                println!("OK: {} - Has project-specific rules", project_name);
             } else {
-                println!(
-                    "   {} - Using workspace rules",
-                    project_name
-                );
+                println!("   {} - Using workspace rules", project_name);
             }
         }
 
@@ -134,10 +125,7 @@ impl<'a> ProjectRulesManager<'a> {
 
         super::config::save_config(&project_rules_path, &workspace_rules)?;
 
-        println!(
-            "OK: Copied workspace rules to project {}",
-            project_name
-        );
+        println!("OK: Copied workspace rules to project {}", project_name);
         println!("   Edit {} to customize", project_rules_path.display());
 
         Ok(())

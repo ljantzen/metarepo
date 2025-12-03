@@ -81,9 +81,7 @@ pub fn run_script(
     }
 
     if selected_projects.is_empty() {
-        println!(
-            "  INFO: No projects selected or script not found"
-        );
+        println!("  INFO: No projects selected or script not found");
         return Ok(());
     }
 
@@ -185,8 +183,14 @@ pub fn run_script(
         return Ok(());
     } else {
         for project_name in &selected_projects {
-            match execute_script_in_project(script_name, project_name, base_path, &config, env_vars, verbose)
-            {
+            match execute_script_in_project(
+                script_name,
+                project_name,
+                base_path,
+                &config,
+                env_vars,
+                verbose,
+            ) {
                 Ok(_) => success_count += 1,
                 Err(e) => {
                     eprintln!("     ERROR: Failed: {}", e);
@@ -200,11 +204,7 @@ pub fn run_script(
     println!(
         "  Summary: {} scripts completed, {} failed",
         success_count,
-        if !failed.is_empty() {
-            failed.len()
-        } else {
-            0
-        }
+        if !failed.is_empty() { failed.len() } else { 0 }
     );
 
     Ok(())
@@ -435,11 +435,7 @@ pub fn list_scripts(base_path: &Path, project: Option<&str>) -> Result<()> {
         if !global_scripts.is_empty() {
             println!("\n  Global Scripts");
             for (name, cmd) in global_scripts {
-                println!(
-                    "     {} -> {}",
-                    name,
-                    cmd
-                );
+                println!("     {} -> {}", name, cmd);
             }
         }
     }
@@ -447,16 +443,9 @@ pub fn list_scripts(base_path: &Path, project: Option<&str>) -> Result<()> {
     // Show project-specific scripts
     if let Some(project_name) = project {
         if let Some(project_scripts) = config.get_project_scripts(project_name) {
-            println!(
-                "\n  Project Scripts ({})",
-                project_name
-            );
+            println!("\n  Project Scripts ({})", project_name);
             for (name, cmd) in project_scripts {
-                println!(
-                    "     {} -> {}",
-                    name,
-                    cmd
-                );
+                println!("     {} -> {}", name, cmd);
             }
         }
     } else {
@@ -464,16 +453,9 @@ pub fn list_scripts(base_path: &Path, project: Option<&str>) -> Result<()> {
         for (project_name, entry) in &config.projects {
             if let ProjectEntry::Metadata(metadata) = entry {
                 if !metadata.scripts.is_empty() {
-                    println!(
-                        "\n  {} (project)",
-                        project_name
-                    );
+                    println!("\n  {} (project)", project_name);
                     for (name, cmd) in &metadata.scripts {
-                        println!(
-                            "     {} -> {}",
-                            name,
-                            cmd
-                        );
+                        println!("     {} -> {}", name, cmd);
                     }
                 }
             }

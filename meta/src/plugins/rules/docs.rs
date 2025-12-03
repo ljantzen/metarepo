@@ -1,4 +1,3 @@
-
 pub fn print_full_documentation() {
     print_full_documentation_formatted(false);
 }
@@ -15,10 +14,7 @@ fn print_full_documentation_formatted(ai_mode: bool) {
             "{}",
             "═══════════════════════════════════════════════════════════════"
         );
-        println!(
-            "{}",
-            "           METAREPO RULES - COMPLETE DOCUMENTATION"
-        );
+        println!("{}", "           METAREPO RULES - COMPLETE DOCUMENTATION");
         println!(
             "{}",
             "═══════════════════════════════════════════════════════════════"
@@ -48,12 +44,8 @@ pub fn print_directory_rule_docs() {
     println!("```");
     println!();
     println!("{}", "Properties:");
-    println!(
-        "  • {}: Directory path relative to project root",
-        "path"    );
-    println!(
-        "  • {}: Whether the directory must exist",
-        "required"    );
+    println!("  • {}: Directory path relative to project root", "path");
+    println!("  • {}: Whether the directory must exist", "required");
     println!("  • {}: Human-readable description", "description");
     println!();
     println!("{}", "Auto-fix:");
@@ -80,16 +72,16 @@ pub fn print_component_rule_docs() {
     println!("{}", "Properties:");
     println!(
         "  • {}: Glob pattern to match component directories",
-        "pattern"    );
-    println!(
-        "  • {}: List of required files/directories",
-        "structure"    );
+        "pattern"
+    );
+    println!("  • {}: List of required files/directories", "structure");
     println!("  • {}: Human-readable description", "description");
     println!();
     println!("{}", "Placeholders:");
     println!(
         "  • {} is replaced with the actual component name",
-        "[ComponentName]"    );
+        "[ComponentName]"
+    );
     println!();
     println!("{}", "Auto-fix:");
     println!("  OK: Missing directories in structure can be created");
@@ -113,9 +105,7 @@ pub fn print_naming_rule_docs() {
     println!();
     println!("{}", "Properties:");
     println!("  • {}: Glob pattern for files to check", "pattern");
-    println!(
-        "  • {}: Regex pattern for valid names",
-        "naming_pattern"    );
+    println!("  • {}: Regex pattern for valid names", "naming_pattern");
     println!("  • {}: Optional naming style hint", "case_style");
     println!("    Options: PascalCase, camelCase, snake_case, UPPER_CASE, kebab-case");
     println!("  • {}: Human-readable description", "description");
@@ -147,10 +137,9 @@ pub fn print_dependency_rule_docs() {
     println!("{}", "Properties:");
     println!(
         "  • {}: List of packages that must not be used",
-        "forbidden"    );
-    println!(
-        "  • {}: Map of required packages and versions",
-        "required"    );
+        "forbidden"
+    );
+    println!("  • {}: Map of required packages and versions", "required");
     println!("  • {}: Maximum dependency depth", "max_depth");
     println!("  • {}: Human-readable description", "description");
     println!();
@@ -178,15 +167,15 @@ pub fn print_import_rule_docs() {
     println!();
     println!("{}", "Properties:");
     println!("  • {}: Files to check", "source_pattern");
-    println!(
-        "  • {}: List of allowed import patterns",
-        "allowed_imports"    );
+    println!("  • {}: List of allowed import patterns", "allowed_imports");
     println!(
         "  • {}: List of forbidden import patterns",
-        "forbidden_imports"    );
+        "forbidden_imports"
+    );
     println!(
         "  • {}: Require absolute over relative imports",
-        "require_absolute"    );
+        "require_absolute"
+    );
     println!("  • {}: Maximum import depth", "max_depth");
 }
 
@@ -211,16 +200,16 @@ pub fn print_documentation_rule_docs() {
     println!();
     println!("{}", "Properties:");
     println!("  • {}: Files to check", "pattern");
-    println!(
-        "  • {}: Require file header comments",
-        "require_header"    );
+    println!("  • {}: Require file header comments", "require_header");
     println!("  • {}: Require code examples", "require_examples");
     println!(
         "  • {}: Minimum description length",
-        "min_description_length"    );
+        "min_description_length"
+    );
     println!(
         "  • {}: Required documentation sections",
-        "required_sections"    );
+        "required_sections"
+    );
 }
 
 pub fn print_size_rule_docs() {
@@ -243,12 +232,8 @@ pub fn print_size_rule_docs() {
     println!("  • {}: Files to check", "pattern");
     println!("  • {}: Maximum line count", "max_lines");
     println!("  • {}: Maximum file size in bytes", "max_bytes");
-    println!(
-        "  • {}: Maximum number of functions",
-        "max_functions"    );
-    println!(
-        "  • {}: Maximum cyclomatic complexity",
-        "max_complexity"    );
+    println!("  • {}: Maximum number of functions", "max_functions");
+    println!("  • {}: Maximum cyclomatic complexity", "max_complexity");
 }
 
 pub fn print_security_rule_docs() {
@@ -273,16 +258,16 @@ pub fn print_security_rule_docs() {
     println!();
     println!("{}", "Properties:");
     println!("  • {}: Glob pattern for files to check", "pattern");
-    println!(
-        "  • {}: Regex patterns to flag",
-        "forbidden_patterns"    );
+    println!("  • {}: Regex patterns to flag", "forbidden_patterns");
     println!(
         "  • {}: Functions that shouldn't be used",
-        "forbidden_functions"    );
+        "forbidden_functions"
+    );
     println!("  • {}: Flag non-HTTPS URLs", "require_https");
     println!(
         "  • {}: Check for hardcoded secrets",
-        "no_hardcoded_secrets"    );
+        "no_hardcoded_secrets"
+    );
 }
 
 pub fn print_file_rule_docs() {
@@ -305,13 +290,15 @@ pub fn print_file_rule_docs() {
     println!("  • {}: Glob pattern for files to check", "pattern");
     println!(
         "  • {}: Map of required file types and their patterns",
-        "requires"    );
+        "requires"
+    );
     println!("  • {}: Human-readable description", "description");
     println!();
     println!("{}", "Special Patterns:");
     println!(
         "  • {}: Looks for test annotations within the file itself",
-        "#[test]"    );
+        "#[test]"
+    );
     println!("  • {}: Replaced with the base filename", "*");
     println!();
     println!("{}", "Auto-fix:");
@@ -340,31 +327,26 @@ fn print_rule_types() {
     println!("{}", "══════════");
     println!();
     println!("{}", "Structure Rules:");
-    println!(
-        "  1. {} - Ensure directories exist",
-        "Directory Rules"    );
+    println!("  1. {} - Ensure directories exist", "Directory Rules");
     println!(
         "  2. {} - Validate component folder structures",
-        "Component Rules"    );
-    println!(
-        "  3. {} - Check for required companion files",
-        "File Rules"    );
+        "Component Rules"
+    );
+    println!("  3. {} - Check for required companion files", "File Rules");
     println!();
     println!("{}", "Quality Rules:");
-    println!(
-        "  4. {} - Enforce file naming conventions",
-        "Naming Rules"    );
-    println!(
-        "  5. {} - Control file size and complexity",
-        "Size Rules"    );
+    println!("  4. {} - Enforce file naming conventions", "Naming Rules");
+    println!("  5. {} - Control file size and complexity", "Size Rules");
     println!(
         "  6. {} - Ensure documentation coverage",
-        "Documentation Rules"    );
+        "Documentation Rules"
+    );
     println!();
     println!("{}", "Architecture Rules:");
     println!(
         "  7. {} - Manage allowed/forbidden packages",
-        "Dependency Rules"    );
+        "Dependency Rules"
+    );
     println!("  8. {} - Control import patterns", "Import Rules");
     println!("  9. {} - Basic security checks", "Security Rules");
     println!();
@@ -377,12 +359,11 @@ fn print_configuration_format() {
     println!("Rules can be defined in multiple locations:");
     println!();
     println!("1. {} - Workspace-wide rules", ".rules.yaml");
-    println!(
-        "2. {} - Project-specific rules",
-        "<project>/.rules.yaml"    );
+    println!("2. {} - Project-specific rules", "<project>/.rules.yaml");
     println!(
         "3. {} - Project rules in meta config",
-        ".meta (rules section)"    );
+        ".meta (rules section)"
+    );
     println!();
     println!("{}", "Priority (highest to lowest):");
     println!("  1. Project-specific .rules.yaml");
@@ -443,20 +424,22 @@ fn print_best_practices() {
     println!();
     println!(
         "1. {} - Define common rules at workspace level",
-        "Start Simple"    );
+        "Start Simple"
+    );
     println!(
         "2. {} - Override with project-specific rules as needed",
-        "Be Specific"    );
+        "Be Specific"
+    );
     println!(
         "3. {} - Mark optional directories as required: false",
-        "Use Severity"    );
+        "Use Severity"
+    );
     println!(
         "4. {} - Add descriptions for team understanding",
-        "Document Rules"    );
+        "Document Rules"
+    );
     println!("5. {} - Use --fix during development", "Automate");
-    println!(
-        "6. {} - Add rules check to CI/CD pipeline",
-        "Enforce"    );
+    println!("6. {} - Add rules check to CI/CD pipeline", "Enforce");
     println!();
     println!("{}", "AI Assistant Integration:");
     println!("• Run 'meta rules check' before making structural changes");
@@ -474,19 +457,17 @@ pub fn print_create_help() {
     println!("{}", "Available Commands:");
     println!(
         "  {} - Add a directory rule",
-        "meta rules create directory <path>"    );
+        "meta rules create directory <path>"
+    );
     println!(
         "  {} - Add a component rule",
-        "meta rules create component <pattern>"    );
-    println!(
-        "  {} - Add a file rule",
-        "meta rules create file <pattern>"    );
+        "meta rules create component <pattern>"
+    );
+    println!("  {} - Add a file rule", "meta rules create file <pattern>");
     println!();
     println!("{}", "Options:");
     println!("  {} - Target specific project", "--project <name>");
-    println!(
-        "  {} - Mark as required (directory rules)",
-        "--required"    );
+    println!("  {} - Mark as required (directory rules)", "--required");
     println!("  {} - Add description", "--description <text>");
     println!();
     println!("{}", "Examples:");

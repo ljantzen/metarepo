@@ -294,10 +294,7 @@ fn handle_check(matches: &ArgMatches, config: &RuntimeConfig) -> Result<()> {
     }
 
     if total_violations > 0 {
-        println!(
-            "\nSummary: Found {} total violations",
-            total_violations
-        );
+        println!("\nSummary: Found {} total violations", total_violations);
         if !fix {
             println!("TIP: Run with --fix to automatically fix fixable violations");
         }
@@ -334,13 +331,13 @@ fn handle_init(matches: &ArgMatches, config: &RuntimeConfig) -> Result<()> {
     std::fs::write(&full_path, &yaml)?;
 
     if config.verbose {
-        println!("OK: Created rules configuration at: {}", full_path.display());
+        println!(
+            "OK: Created rules configuration at: {}",
+            full_path.display()
+        );
     }
     if project.is_some() {
-        println!(
-            "Project {} now has specific rules",
-            project.unwrap()
-        );
+        println!("Project {} now has specific rules", project.unwrap());
     }
     println!("\nExample configuration:");
     println!("{}", yaml);

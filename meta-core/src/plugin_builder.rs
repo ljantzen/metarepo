@@ -381,7 +381,8 @@ impl ArgBuilder {
         if self.takes_value {
             arg = arg.action(clap::ArgAction::Set);
         } else {
-            arg = arg.action(clap::ArgAction::SetTrue);
+            // For boolean flags (SetTrue), provide default value of "false" when flag is not present
+            arg = arg.action(clap::ArgAction::SetTrue).default_value("false");
         }
 
         if let Some(ref default) = self.default_value {

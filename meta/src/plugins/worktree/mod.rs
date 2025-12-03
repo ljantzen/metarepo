@@ -190,8 +190,7 @@ pub fn add_worktrees(
             } else {
                 eprintln!(
                     "{} Project '{}' not found in workspace",
-                    "ERROR:",
-                    project_id
+                    "ERROR:", project_id
                 );
             }
         }
@@ -227,9 +226,7 @@ pub fn add_worktrees(
         }
 
         if !project_path.join(".git").exists() {
-            eprintln!(
-                "ERROR: {} (not a git repo)",
-                project_name            );
+            eprintln!("ERROR: {} (not a git repo)", project_name);
             failed.push(project_name.clone());
             continue;
         }
@@ -288,10 +285,7 @@ pub fn add_worktrees(
                 }
                 Ok(BranchStatus::Remote(remote_ref)) => {
                     // Branch exists remotely, create local tracking branch
-                    println!(
-                        "  INFO: Found remote branch: {}",
-                        remote_ref
-                    );
+                    println!("  INFO: Found remote branch: {}", remote_ref);
                     cmd.arg("-b").arg(branch);
                     cmd.arg(&worktree_path);
                     cmd.arg(&remote_ref);
@@ -302,17 +296,11 @@ pub fn add_worktrees(
                         start.to_string()
                     } else {
                         // Prompt user for starting point
-                        println!(
-                            "  WARNING: Branch '{}' not found",
-                            branch
-                        );
+                        println!("  WARNING: Branch '{}' not found", branch);
                         prompt_for_starting_point()?
                     };
 
-                    println!(
-                        "  OK: Creating new branch from {}",
-                        start_point
-                    );
+                    println!("  OK: Creating new branch from {}", start_point);
                     cmd.arg("-b").arg(branch);
                     cmd.arg(&worktree_path);
                     cmd.arg(&start_point);
@@ -438,9 +426,7 @@ pub fn remove_worktrees(
             } else {
                 println!(
                     "{} Current project '{}' doesn't have worktree '{}'",
-                    "ERROR:",
-                    current,
-                    branch
+                    "ERROR:", current, branch
                 );
                 return Ok(());
             }
@@ -520,8 +506,8 @@ pub fn remove_worktrees(
 
                 if status.success() {
                     if verbose {
-                println!("  OK: Complete");
-            }
+                        println!("  OK: Complete");
+                    }
                     success_count += 1;
                 } else {
                     eprintln!("  ERROR: Failed");
@@ -598,19 +584,12 @@ pub fn list_all_worktrees(base_path: &Path) -> Result<()> {
         for (branch, projects) in worktree_map.iter() {
             println!("{}", branch);
             for (project, path) in projects {
-                let status = if path.exists() {
-                    "active"                } else {
-                    "missing"                };
+                let status = if path.exists() { "active" } else { "missing" };
 
                 // Show relative path from project root
                 let relative_path = path.strip_prefix(base_path).unwrap_or(path).display();
 
-                println!(
-                    "  {}: {} ({})",
-                    project,
-                    relative_path,
-                    status
-                );
+                println!("  {}: {} ({})", project, relative_path, status);
             }
             println!();
         }
@@ -618,7 +597,8 @@ pub fn list_all_worktrees(base_path: &Path) -> Result<()> {
         println!(
             "Total: {} worktrees across {} projects",
             total_worktrees.to_string(),
-            projects_with_worktrees.to_string()        );
+            projects_with_worktrees.to_string()
+        );
     }
 
     println!();
@@ -673,9 +653,7 @@ pub fn prune_worktrees(base_path: &Path, dry_run: bool) -> Result<()> {
 
     if dry_run {
         println!("\n{}", "Check complete");
-        println!(
-            "{}",
-            "Run without --dry-run to remove stale worktrees"        );
+        println!("{}", "Run without --dry-run to remove stale worktrees");
     } else {
         println!("\n{}", "Prune complete");
     }
@@ -687,9 +665,7 @@ pub fn prune_worktrees(base_path: &Path, dry_run: bool) -> Result<()> {
 fn select_projects_interactive(config: &MetaConfig) -> Result<Vec<String>> {
     use std::io::{self, Write};
 
-    println!(
-        "\n  Select projects for worktree (space to toggle, enter to confirm):"
-    );
+    println!("\n  Select projects for worktree (space to toggle, enter to confirm):");
     println!("  {}", "─".repeat(60));
 
     let projects: Vec<String> = config.projects.keys().cloned().collect();
@@ -702,7 +678,8 @@ fn select_projects_interactive(config: &MetaConfig) -> Result<Vec<String>> {
 
     print!(
         "\n  {} Enter project numbers (comma-separated) or 'all': ",
-        "→"    );
+        "→"
+    );
     io::stdout().flush()?;
 
     let mut input = String::new();
@@ -732,10 +709,7 @@ fn select_projects_interactive(config: &MetaConfig) -> Result<Vec<String>> {
 fn select_projects_for_removal(available: &[String], branch: &str) -> Result<Vec<String>> {
     use std::io::{self, Write};
 
-    println!(
-        "\n  Select projects to remove worktree '{}' from:",
-        branch
-    );
+    println!("\n  Select projects to remove worktree '{}' from:", branch);
     println!("  {}", "─".repeat(60));
 
     for (i, project) in available.iter().enumerate() {
@@ -744,7 +718,8 @@ fn select_projects_for_removal(available: &[String], branch: &str) -> Result<Vec
 
     print!(
         "\n  {} Enter project numbers (comma-separated) or 'all': ",
-        "→"    );
+        "→"
+    );
     io::stdout().flush()?;
 
     let mut input = String::new();
@@ -774,8 +749,7 @@ fn select_projects_for_removal(available: &[String], branch: &str) -> Result<Vec
 fn prompt_for_starting_point() -> Result<String> {
     use std::io::{self, Write};
 
-    println!(
-        "\n  Branch doesn't exist. Create it from:"    );
+    println!("\n  Branch doesn't exist. Create it from:");
     println!("  {}", "─".repeat(60));
     println!("  {} HEAD (current commit)", "[1]");
     println!("  {} origin/main", "[2]");
@@ -794,9 +768,7 @@ fn prompt_for_starting_point() -> Result<String> {
         "2" => Ok("origin/main".to_string()),
         "3" => Ok("origin/develop".to_string()),
         "4" => {
-            print!(
-                "  {} Enter custom ref (branch/tag/commit): ",
-                "→"            );
+            print!("  {} Enter custom ref (branch/tag/commit): ", "→");
             io::stdout().flush()?;
             let mut custom = String::new();
             io::stdin().read_line(&mut custom)?;

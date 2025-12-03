@@ -178,11 +178,7 @@ impl OutputManager {
             "(unknown)".to_string()
         };
 
-        println!(
-            "  {} {}",
-            output.name,
-            duration_str
-        );
+        println!("  {} {}", output.name, duration_str);
 
         // Display command if available
         if let Some(command) = &output.command {
@@ -262,11 +258,7 @@ impl ProgressIndicator {
                 let progress_text = if running > 0 {
                     format!(
                         "Running '{}' {} {}/{} projects • {}s elapsed",
-                        task_name,
-                        spinner,
-                        completed,
-                        total,
-                        elapsed
+                        task_name, spinner, completed, total, elapsed
                     )
                 } else {
                     format!(

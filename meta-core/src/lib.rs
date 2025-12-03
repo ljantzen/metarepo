@@ -52,6 +52,7 @@ pub struct RuntimeConfig {
     pub meta_file_path: Option<PathBuf>,
     pub experimental: bool,
     pub non_interactive: Option<NonInteractiveMode>,
+    /// Verbose output flag. Defaults to false if not specified.
     pub verbose: bool,
 }
 

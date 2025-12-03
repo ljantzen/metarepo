@@ -92,6 +92,14 @@ impl MetarepoCli {
                     .value_parser(["fail", "defaults"])
                     .help("Non-interactive mode: 'fail' exits on missing input, 'defaults' uses sensible defaults")
                     .global(true)
+            )
+            .arg(
+                Arg::new("verbose")
+                    .long("verbose")
+                    .action(clap::ArgAction::SetTrue)
+                    .default_value("false")
+                    .help("Enable verbose output")
+                    .global(true)
             );
 
         app

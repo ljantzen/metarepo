@@ -22,10 +22,7 @@ impl RuleCreator {
 
         // Check if rule already exists
         if config.directories.iter().any(|r| r.path == path) {
-            println!(
-                "Warning: Directory rule for '{}' already exists",
-                path
-            );
+            println!("Warning: Directory rule for '{}' already exists", path);
             return Ok(());
         }
 
@@ -40,14 +37,7 @@ impl RuleCreator {
 
         println!("OK: Created directory rule:");
         println!("   Path: {}", path);
-        println!(
-            "   Required: {}",
-            if required {
-                "yes"
-            } else {
-                "no"
-            }
-        );
+        println!("   Required: {}", if required { "yes" } else { "no" });
         if let Some(desc) = &description {
             println!("   Description: {}", desc);
         }
@@ -66,10 +56,7 @@ impl RuleCreator {
 
         // Check if rule already exists
         if config.components.iter().any(|r| r.pattern == pattern) {
-            println!(
-                "Warning: Component rule for '{}' already exists",
-                pattern
-            );
+            println!("Warning: Component rule for '{}' already exists", pattern);
             return Ok(());
         }
 
@@ -106,10 +93,7 @@ impl RuleCreator {
 
         // Check if rule already exists
         if config.files.iter().any(|r| r.pattern == pattern) {
-            println!(
-                "Warning: File rule for '{}' already exists",
-                pattern
-            );
+            println!("Warning: File rule for '{}' already exists", pattern);
             return Ok(());
         }
 

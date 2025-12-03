@@ -219,9 +219,7 @@ fn handle_add(matches: &ArgMatches, config: &RuntimeConfig) -> Result<()> {
         Some(p) => p.clone(),
         None => {
             if is_interactive() {
-                println!(
-                    "\n  Add a new project to your workspace"
-                );
+                println!("\n  Add a new project to your workspace");
                 prompt_text("Project name/path", None, false, non_interactive)?
             } else {
                 return Err(anyhow::anyhow!(
@@ -380,9 +378,7 @@ fn handle_remove(matches: &ArgMatches, config: &RuntimeConfig) -> Result<()> {
                     return Err(anyhow::anyhow!("No projects found in workspace"));
                 }
 
-                println!(
-                    "\n  Remove a project from workspace"
-                );
+                println!("\n  Remove a project from workspace");
                 prompt_select("Project to remove", project_names, None, non_interactive)?
             } else {
                 return Err(anyhow::anyhow!(

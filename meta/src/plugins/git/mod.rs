@@ -96,12 +96,7 @@ pub fn clone_missing_repos() -> Result<()> {
 
     for (i, (project_path, repo_url, full_path, is_bare)) in missing_projects.iter().enumerate() {
         let project_name = project_path.rsplit('/').next().unwrap_or(project_path);
-        println!(
-            "[{}/{}] Cloning {}",
-            (i + 1),
-            total,
-            project_name
-        );
+        println!("[{}/{}] Cloning {}", (i + 1), total, project_name);
 
         match clone_repository(repo_url, full_path, *is_bare) {
             Ok(_) => success_count += 1,
@@ -115,11 +110,7 @@ pub fn clone_missing_repos() -> Result<()> {
     println!(
         "Summary: {} cloned, {} failed",
         success_count,
-        if failed_count > 0 {
-            failed_count
-        } else {
-            0
-        }
+        if failed_count > 0 { failed_count } else { 0 }
     );
 
     Ok(())

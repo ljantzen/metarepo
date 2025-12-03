@@ -204,24 +204,15 @@ pub fn import_project_with_options(
                     }
 
                     println!("\n  {} {}", "🔗", "Creating symlink...");
-                    println!(
-                        "     {} {}",
-                        "From:",
-                        project_path                    );
-                    println!(
-                        "     {} {}",
-                        "To:",
-                        external_path.display().to_string()                    );
+                    println!("     {} {}", "From:", project_path);
+                    println!("     {} {}", "To:", external_path.display().to_string());
                     create_symlink(&external_path, &local_project_path)?;
 
                     let url = if let Some(detected_url) = remote_url {
                         println!("     {} {}", "Remote:", detected_url);
                         format!("external:{}", detected_url)
                     } else {
-                        println!(
-                            "     {} {}",
-                            "Type:",
-                            "Local project (no remote)"                        );
+                        println!("     {} {}", "Type:", "Local project (no remote)");
                         format!("external:local:{}", external_path.display())
                     };
 
@@ -236,13 +227,8 @@ pub fn import_project_with_options(
                         println!("     {} {}", "Remote:", detected_url);
                         detected_url
                     } else {
-                        println!(
-                            "\n  Using existing directory"
-                        );
-                        println!(
-                            "     {} {}",
-                            "Type:",
-                            "Local project (no remote)"                        );
+                        println!("\n  Using existing directory");
+                        println!("     {} {}", "Type:", "Local project (no remote)");
                         format!("local:{}", project_path)
                     };
 
@@ -270,19 +256,12 @@ pub fn import_project_with_options(
                 let remote_url = get_remote_url(&repo)?;
 
                 let url = if let Some(detected_url) = remote_url {
-                    println!(
-                        "\n  Using existing git repository"
-                    );
+                    println!("\n  Using existing git repository");
                     println!("     Remote: {}", detected_url);
                     detected_url
                 } else {
-                    println!(
-                        "\n  Using existing git repository"
-                    );
-                    println!(
-                        "     {} {}",
-                        "Type:",
-                        "Local project (no remote)"                    );
+                    println!("\n  Using existing git repository");
+                    println!("     {} {}", "Type:", "Local project (no remote)");
                     format!("local:{}", project_path)
                 };
 
@@ -301,9 +280,7 @@ pub fn import_project_with_options(
                             project_path
                         )
                     );
-                    print!(
-                        "     {} Initialize as git repository? [y/N]: ",
-                        "→"                    );
+                    print!("     {} Initialize as git repository? [y/N]: ", "→");
 
                     // Try to flush stdout and read input
                     match io::stdout().flush() {
@@ -319,12 +296,11 @@ pub fn import_project_with_options(
                                     println!();
                                     println!(
                                         "     {} {}",
-                                        "WARNING:",
-                                        "Unable to read input from terminal"                                    );
+                                        "WARNING:", "Unable to read input from terminal"
+                                    );
                                     println!(
                                         "     {} {}",
-                                        "└",
-                                        "Use --init-git flag to automatically initialize git"
+                                        "└", "Use --init-git flag to automatically initialize git"
                                     );
                                     return Err(anyhow::anyhow!("Directory '{}' exists but is not a git repository.\n\nOptions:\n  1. Use --init-git flag: meta project add {} --init-git\n  2. Initialize manually: cd {} && git init", project_path, project_path, project_path));
                                 }
@@ -334,26 +310,18 @@ pub fn import_project_with_options(
                             println!();
                             println!(
                                 "     {} {}",
-                                "WARNING:",
-                                "Terminal interaction not available"                            );
+                                "WARNING:", "Terminal interaction not available"
+                            );
                             return Err(anyhow::anyhow!("Directory '{}' exists but is not a git repository.\n\nOptions:\n  1. Use --init-git flag: meta project add {} --init-git\n  2. Initialize manually: cd {} && git init", project_path, project_path, project_path));
                         }
                     }
                 };
 
                 if should_init {
-                    println!(
-                        "\n  Initializing git repository..."
-                    );
+                    println!("\n  Initializing git repository...");
                     Repository::init(&local_project_path)?;
-                    println!(
-                        "     {} {}",
-                        "OK:",
-                        "Git repository initialized"                    );
-                    println!(
-                        "     {} {}",
-                        "Type:",
-                        "Local project (no remote)"                    );
+                    println!("     {} {}", "OK:", "Git repository initialized");
+                    println!("     {} {}", "Type:", "Local project (no remote)");
                     (format!("local:{}", project_path), false)
                 } else {
                     return Err(anyhow::anyhow!("Directory '{}' exists but is not a git repository.\n\nOptions:\n  1. Use --init-git flag: meta project add {} --init-git\n  2. Initialize manually: cd {} && git init", project_path, project_path, project_path));
@@ -371,24 +339,12 @@ pub fn import_project_with_options(
     if !is_external && !local_project_path.exists() {
         if !final_repo_url.starts_with("local:") && !final_repo_url.starts_with("external:") {
             println!("\n  Adding new project...");
-            println!(
-                "     {} {}",
-                "Name:",
-                project_path            );
-            println!(
-                "     {} {}",
-                "Source:",
-                final_repo_url            );
+            println!("     {} {}", "Name:", project_path);
+            println!("     {} {}", "Source:", final_repo_url);
 
             if bare {
-                println!(
-                    "     {} {}",
-                    "Type:",
-                    "Bare repository"                );
-                println!(
-                    "     {} {}",
-                    "Status:",
-                    "Cloning bare repository..."                );
+                println!("     {} {}", "Type:", "Bare repository");
+                println!("     {} {}", "Status:", "Cloning bare repository...");
 
                 // Clone as bare repo to <project>/.git/
                 let bare_path = local_project_path.join(".git");
@@ -398,21 +354,15 @@ pub fn import_project_with_options(
                 std::fs::create_dir_all(&local_project_path)?;
 
                 // Create default worktree at <project>/<default-branch>/
-                println!(
-                    "     {} {}",
-                    "Status:",
-                    "Creating default worktree..."                );
+                println!("     {} {}", "Status:", "Creating default worktree...");
                 create_default_worktree(&bare_path, &local_project_path)?;
 
                 println!(
                     "     {} {}",
-                    "OK:",
-                    "Bare repository and default worktree created"                );
+                    "OK:", "Bare repository and default worktree created"
+                );
             } else {
-                println!(
-                    "     {} {}",
-                    "Status:",
-                    "Cloning repository..."                );
+                println!("     {} {}", "Status:", "Cloning repository...");
                 clone_with_auth(&final_repo_url, &local_project_path, false)?;
             }
         } else {
@@ -456,18 +406,13 @@ pub fn import_project_with_options(
     );
 
     if is_external {
-        println!(
-            "     {} {}",
-            "└",
-            "Created symlink to external directory"
-        );
+        println!("     {} {}", "└", "Created symlink to external directory");
     }
 
     if final_repo_url.starts_with("local:") {
         println!(
             "     {} {}",
-            "└",
-            "Updated .meta file (not added to .gitignore)"
+            "└", "Updated .meta file (not added to .gitignore)"
         );
         println!(
             "     {} {}",
@@ -478,10 +423,7 @@ pub fn import_project_with_options(
             )
         );
     } else {
-        println!(
-            "     {} {}",
-            "└",
-            "Updated .meta file and .gitignore"        );
+        println!("     {} {}", "└", "Updated .meta file and .gitignore");
     }
     println!();
 
@@ -552,8 +494,8 @@ pub fn import_project_recursive_with_options(
         {
             eprintln!(
                 "\n  {} {}",
-                "WARNING:",
-                "Warning: Failed to process nested repositories"            );
+                "WARNING:", "Warning: Failed to process nested repositories"
+            );
             eprintln!("     {} {}", "└", e.to_string());
         }
     }
@@ -608,7 +550,8 @@ fn process_nested_repositories(
             println!(
                 "     {} {}",
                 "⏭",
-                format!("Skipping ignored project '{}'", name)            );
+                format!("Skipping ignored project '{}'", name)
+            );
             continue;
         }
         let url = nested_meta
@@ -642,12 +585,10 @@ fn process_nested_repositories(
         println!(
             "\n  {} {}",
             "📥",
-            format!("Importing nested project '{}'", name)        );
+            format!("Importing nested project '{}'", name)
+        );
         println!("     {} {}", "URL:", url);
-        println!(
-            "     {} {}",
-            "Path:",
-            import_path.display().to_string()        );
+        println!("     {} {}", "Path:", import_path.display().to_string());
 
         // Perform the actual import
         // For nested imports, we need to handle the base path differently
@@ -676,7 +617,8 @@ fn process_nested_repositories(
             println!(
                 "     {} {}",
                 "⏭",
-                format!("Directory '{}' already exists, skipping", import_name)            );
+                format!("Directory '{}' already exists, skipping", import_name)
+            );
             context.exit_import();
             continue;
         }
@@ -689,7 +631,8 @@ fn process_nested_repositories(
             println!(
                 "     {} {}",
                 "⏭",
-                format!("Skipping local external project '{}'", name)            );
+                format!("Skipping local external project '{}'", name)
+            );
             context.exit_import();
             continue;
         } else if url.starts_with("external:") {
@@ -700,23 +643,22 @@ fn process_nested_repositories(
             println!(
                 "     {} {}",
                 "⏭",
-                format!("Skipping local project '{}'", name)            );
+                format!("Skipping local project '{}'", name)
+            );
             context.exit_import();
             continue;
         } else {
             url.clone()
         };
 
-        println!(
-            "     Cloning into '{}'",
-            target_path.display()
-        );
+        println!("     Cloning into '{}'", target_path.display());
         // Nested imports don't support bare repositories for now
         if let Err(e) = clone_with_auth(&actual_url, &target_path, false) {
             eprintln!(
                 "     {} {}",
                 "ERROR:",
-                format!("Failed to clone '{}': {}", name, e)            );
+                format!("Failed to clone '{}': {}", name, e)
+            );
             context.exit_import();
             continue;
         }
@@ -829,13 +771,8 @@ pub fn list_projects(base_path: &Path) -> Result<()> {
     let config = MetaConfig::load_from_file(&meta_file_path)?;
 
     if config.projects.is_empty() {
-        println!(
-            "\n  No projects found in workspace"
-        );
-        println!(
-            "  {} {}",
-            "",
-            "Use 'meta project import' to add projects"        );
+        println!("\n  No projects found in workspace");
+        println!("  {} {}", "", "Use 'meta project import' to add projects");
         println!();
         return Ok(());
     }
@@ -882,49 +819,26 @@ pub fn list_projects(base_path: &Path) -> Result<()> {
         // Project details with proper indentation and styling
         if url.starts_with("external:local:") {
             let path = url.strip_prefix("external:local:").unwrap();
-            println!(
-                "  {}  {} {}",
-                "│",
-                "Type:",
-                "Local (no remote)"            );
-            println!(
-                "  {}  {} {}",
-                "│",
-                "Path:",
-                path            );
+            println!("  {}  {} {}", "│", "Type:", "Local (no remote)");
+            println!("  {}  {} {}", "│", "Path:", path);
         } else if url.starts_with("external:") {
             let remote_url = url.strip_prefix("external:").unwrap();
-            println!(
-                "  {}  {} {}",
-                "│",
-                "Type:",
-                "External"            );
-            println!(
-                "  {}  {} {}",
-                "│",
-                "Remote:",
-                remote_url            );
+            println!("  {}  {} {}", "│", "Type:", "External");
+            println!("  {}  {} {}", "│", "Remote:", remote_url);
             if is_symlink {
                 if let Ok(target) = std::fs::read_link(&project_path) {
                     println!(
                         "  {}  {} {}",
                         "└",
                         "Links to:",
-                        target.display().to_string()                    );
+                        target.display().to_string()
+                    );
                 }
             }
         } else if url.starts_with("local:") {
-            println!(
-                "  {}  {} {}",
-                "└",
-                "Type:",
-                "Local (no remote)"            );
+            println!("  {}  {} {}", "└", "Type:", "Local (no remote)");
         } else {
-            println!(
-                "  {}  {} {}",
-                "└",
-                "Remote:",
-                url            );
+            println!("  {}  {} {}", "└", "Remote:", url);
         }
     }
 
@@ -932,7 +846,8 @@ pub fn list_projects(base_path: &Path) -> Result<()> {
     println!(
         "  {} {} projects total\n",
         config.projects.len().to_string(),
-        "workspace"    );
+        "workspace"
+    );
 
     Ok(())
 }
@@ -977,13 +892,8 @@ pub fn show_project_tree(base_path: &Path) -> Result<()> {
     let config = MetaConfig::load_from_file(&meta_file_path)?;
 
     if config.projects.is_empty() {
-        println!(
-            "\n  No projects found in workspace"
-        );
-        println!(
-            "  {} {}",
-            "",
-            "Use 'meta project import' to add projects"        );
+        println!("\n  No projects found in workspace");
+        println!("  {} {}", "", "Use 'meta project import' to add projects");
         println!();
         return Ok(());
     }
@@ -1234,7 +1144,12 @@ pub fn show_project_tree(base_path: &Path) -> Result<()> {
 }
 
 /// Update all projects (pull latest changes)
-pub fn update_projects(base_path: &Path, recursive: bool, depth: Option<usize>, verbose: bool) -> Result<()> {
+pub fn update_projects(
+    base_path: &Path,
+    recursive: bool,
+    depth: Option<usize>,
+    verbose: bool,
+) -> Result<()> {
     // Load the meta file
     let meta_file_path = base_path.join(".meta");
     if !meta_file_path.exists() {
@@ -1246,9 +1161,7 @@ pub fn update_projects(base_path: &Path, recursive: bool, depth: Option<usize>, 
     let config = MetaConfig::load_from_file(&meta_file_path)?;
 
     if config.projects.is_empty() {
-        println!(
-            "\n  No projects to update"
-        );
+        println!("\n  No projects to update");
         return Ok(());
     }
 
@@ -1262,27 +1175,16 @@ pub fn update_projects(base_path: &Path, recursive: bool, depth: Option<usize>, 
         let project_path = base_path.join(name);
 
         if !project_path.exists() {
-            println!(
-                "\n  {} {} {}",
-                "⏭",
-                name,
-                "(missing)"            );
+            println!("\n  {} {} {}", "⏭", name, "(missing)");
             continue;
         }
 
         if !project_path.join(".git").exists() {
-            println!(
-                "\n  {} {} {}",
-                "⏭",
-                name,
-                "(not a git repo)"            );
+            println!("\n  {} {} {}", "⏭", name, "(not a git repo)");
             continue;
         }
 
-        println!(
-            "\n  {} {}",
-            "📥",
-            format!("Updating '{}'", name)        );
+        println!("\n  {} {}", "📥", format!("Updating '{}'", name));
 
         // Open the repository
         match Repository::open(&project_path) {
@@ -1299,29 +1201,24 @@ pub fn update_projects(base_path: &Path, recursive: bool, depth: Option<usize>, 
                         if recursive && project_path.join(".meta").exists() {
                             let current_depth = depth.unwrap_or(3);
                             if current_depth > 0 {
-                                println!(
-                                    "     {} {}",
-                                    "🔍",
-                                    "Checking nested projects..."                                );
+                                println!("     {} {}", "🔍", "Checking nested projects...");
                                 if let Err(e) = update_projects(
                                     &project_path,
                                     recursive,
                                     Some(current_depth - 1),
-                                    verbose
+                                    verbose,
                                 ) {
                                     eprintln!(
                                         "     {} {}",
                                         "WARNING:",
-                                        format!("Failed to update nested: {}", e)                                    );
+                                        format!("Failed to update nested: {}", e)
+                                    );
                                 }
                             }
                         }
                     }
                     Err(e) => {
-                        eprintln!(
-                            "     {} {}",
-                            "ERROR:",
-                            format!("Failed to update: {}", e)                        );
+                        eprintln!("     {} {}", "ERROR:", format!("Failed to update: {}", e));
                         failed += 1;
                     }
                 }
@@ -1330,7 +1227,8 @@ pub fn update_projects(base_path: &Path, recursive: bool, depth: Option<usize>, 
                 eprintln!(
                     "     {} {}",
                     "ERROR:",
-                    format!("Failed to open repository: {}", e)                );
+                    format!("Failed to open repository: {}", e)
+                );
                 failed += 1;
             }
         }
@@ -1342,8 +1240,10 @@ pub fn update_projects(base_path: &Path, recursive: bool, depth: Option<usize>, 
         "Summary:",
         updated.to_string(),
         if failed > 0 {
-            failed.to_string()        } else {
-            failed.to_string()        }
+            failed.to_string()
+        } else {
+            failed.to_string()
+        }
     );
     println!();
 
@@ -1398,20 +1298,14 @@ fn pull_repository(repo: &Repository) -> Result<()> {
     let analysis = repo.merge_analysis(&[&fetch_commit])?;
 
     if analysis.0.is_up_to_date() {
-        println!(
-            "     {} {}",
-            "INFO:",
-            "Already up to date"        );
+        println!("     {} {}", "INFO:", "Already up to date");
     } else if analysis.0.is_fast_forward() {
         let refname = format!("refs/heads/{}", branch);
         let mut reference = repo.find_reference(&refname)?;
         reference.set_target(fetch_commit.id(), "Fast-forward")?;
         repo.set_head(&refname)?;
         repo.checkout_head(Some(git2::build::CheckoutBuilder::default().force()))?;
-        println!(
-            "     {} {}",
-            "⬆",
-            "Fast-forwarded to latest"        );
+        println!("     {} {}", "⬆", "Fast-forwarded to latest");
     } else {
         return Err(anyhow::anyhow!(
             "Cannot fast-forward, manual merge required"
@@ -1548,7 +1442,8 @@ pub fn remove_project(project_name: &str, base_path: &Path, force: bool) -> Resu
                 if has_changes {
                     eprintln!(
                         "\nERROR: Project '{}' has uncommitted changes!",
-                        project_name                    );
+                        project_name
+                    );
                     eprintln!("  Use --force to remove anyway (changes will be lost)");
                     eprintln!("  Or commit/stash your changes first");
                     eprintln!();
@@ -1568,11 +1463,9 @@ pub fn remove_project(project_name: &str, base_path: &Path, force: bool) -> Resu
     println!(
         "\n  {} {}",
         "DELETE:",
-        format!("Removed project '{}'", project_name)    );
-    println!(
-        "     {} {}",
-        "└",
-        "Removed from .meta file"    );
+        format!("Removed project '{}'", project_name)
+    );
+    println!("     {} {}", "└", "Removed from .meta file");
 
     // Optionally remove the directory
     if project_path.exists() {
@@ -1592,7 +1485,8 @@ pub fn remove_project(project_name: &str, base_path: &Path, force: bool) -> Resu
             println!(
                 "     {} {}",
                 " ",
-                format!("To remove: rm -rf {}", project_name)            );
+                format!("To remove: rm -rf {}", project_name)
+            );
         }
     }
 
@@ -1648,7 +1542,8 @@ pub fn update_project_gitignore(project_name: &str, base_path: &Path) -> Result<
         println!(
             "\n  {} {}",
             "INFO:",
-            format!("Project '{}' already has a remote URL", project_name)        );
+            format!("Project '{}' already has a remote URL", project_name)
+        );
         return Ok(());
     }
 
@@ -1678,12 +1573,10 @@ pub fn update_project_gitignore(project_name: &str, base_path: &Path) -> Result<
         println!(
             "\n  {} {}",
             "OK:",
-            format!("Updated project '{}'", project_name)        );
+            format!("Updated project '{}'", project_name)
+        );
         println!("     {} {}", "Remote:", detected_url);
-        println!(
-            "     {} {}",
-            "└",
-            "Added to .gitignore"        );
+        println!("     {} {}", "└", "Added to .gitignore");
         println!();
     } else {
         println!(
@@ -1693,8 +1586,8 @@ pub fn update_project_gitignore(project_name: &str, base_path: &Path) -> Result<
         );
         println!(
             "     {} {}",
-            "└",
-            "Add a remote with: git remote add origin <url>"        );
+            "└", "Add a remote with: git remote add origin <url>"
+        );
         println!();
     }
 
@@ -1702,7 +1595,12 @@ pub fn update_project_gitignore(project_name: &str, base_path: &Path) -> Result<
 }
 
 /// Rename a project in the workspace
-pub fn rename_project(old_name: &str, new_name: &str, base_path: &Path, verbose: bool) -> Result<()> {
+pub fn rename_project(
+    old_name: &str,
+    new_name: &str,
+    base_path: &Path,
+    verbose: bool,
+) -> Result<()> {
     // Load the .meta file
     let meta_file_path = base_path.join(".meta");
     if !meta_file_path.exists() {
@@ -1783,10 +1681,7 @@ pub fn rename_project(old_name: &str, new_name: &str, base_path: &Path, verbose:
         }
     }
 
-    println!(
-        "\n  Renaming project '{}' to '{}'",
-        old_name, new_name
-    );
+    println!("\n  Renaming project '{}' to '{}'", old_name, new_name);
 
     // Update the .meta file first
     config.projects.remove(old_name);

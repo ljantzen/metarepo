@@ -36,9 +36,7 @@ pub fn convert_to_bare(project_name: &str, base_path: &Path, verbose: bool) -> R
 
     // Check if it's already a bare repository
     if config.is_bare_repo(project_name) {
-        println!(
-            "\n  INFO: Project is already configured as a bare repository"
-        );
+        println!("\n  INFO: Project is already configured as a bare repository");
         return Ok(());
     }
 
@@ -50,25 +48,14 @@ pub fn convert_to_bare(project_name: &str, base_path: &Path, verbose: bool) -> R
         ));
     }
 
-    println!(
-        "\n  WARNING: Converting to Bare Repository"
-    );
+    println!("\n  WARNING: Converting to Bare Repository");
     println!("  {}", "═".repeat(60));
     println!("\n  INFO: This operation will:");
-    println!(
-        "     • Convert {} to a bare repository",
-        project_name
-    );
-    println!(
-        "     • Create a worktree for the current branch"
-    );
+    println!("     • Convert {} to a bare repository", project_name);
+    println!("     • Create a worktree for the current branch");
     println!("     • Update the .meta configuration");
-    println!(
-        "\n  WARNING: This operation modifies your repository structure!"
-    );
-    println!(
-        "  Make sure you have committed all changes before proceeding."
-    );
+    println!("\n  WARNING: This operation modifies your repository structure!");
+    println!("  Make sure you have committed all changes before proceeding.");
 
     // Check for uncommitted changes
     let status_output = Command::new("git")
@@ -80,12 +67,8 @@ pub fn convert_to_bare(project_name: &str, base_path: &Path, verbose: bool) -> R
         .context("Failed to check git status")?;
 
     if !status_output.stdout.is_empty() {
-        println!(
-            "\n  ERROR: Uncommitted changes detected!"
-        );
-        println!(
-            "     └ Commit or stash your changes first"
-        );
+        println!("\n  ERROR: Uncommitted changes detected!");
+        println!("     └ Commit or stash your changes first");
         return Err(anyhow::anyhow!(
             "Cannot convert repository with uncommitted changes"
         ));
@@ -109,16 +92,11 @@ pub fn convert_to_bare(project_name: &str, base_path: &Path, verbose: bool) -> R
         return Err(anyhow::anyhow!("Could not determine current branch"));
     }
 
-    println!(
-        "\n  Current branch: {}",
-        current_branch
-    );
+    println!("\n  Current branch: {}", current_branch);
 
     // Prompt for confirmation
     use std::io::{self, Write};
-    print!(
-        "\n  Continue with conversion? [y/N]: "
-    );
+    print!("\n  Continue with conversion? [y/N]: ");
     io::stdout().flush()?;
 
     let mut input = String::new();
@@ -126,9 +104,7 @@ pub fn convert_to_bare(project_name: &str, base_path: &Path, verbose: bool) -> R
     let response = input.trim().to_lowercase();
 
     if response != "y" && response != "yes" {
-        println!(
-            "\n  INFO: Conversion cancelled"
-        );
+        println!("\n  INFO: Conversion cancelled");
         return Ok(());
     }
 
@@ -157,15 +133,11 @@ pub fn convert_to_bare(project_name: &str, base_path: &Path, verbose: bool) -> R
 
     match clone_output {
         Ok(output) if output.status.success() => {
-            println!(
-                "     OK: Created bare repository"
-            );
+            println!("     OK: Created bare repository");
         }
         _ => {
             // Restore on failure
-            println!(
-                "     ERROR: Failed to create bare repository"
-            );
+            println!("     ERROR: Failed to create bare repository");
             println!("     Restoring original .git...");
             if git_backup.exists() {
                 std::fs::rename(&git_backup, project_path.join(".git")).ok();
@@ -175,10 +147,7 @@ pub fn convert_to_bare(project_name: &str, base_path: &Path, verbose: bool) -> R
     }
 
     // Step 3: Create worktree for current branch
-    println!(
-        "\n  [3/5] Creating worktree for '{}'...",
-        current_branch
-    );
+    println!("\n  [3/5] Creating worktree for '{}'...", current_branch);
     let worktree_path = project_path.join(&current_branch);
 
     let worktree_output = Command::new("git")
@@ -193,10 +162,7 @@ pub fn convert_to_bare(project_name: &str, base_path: &Path, verbose: bool) -> R
 
     if !worktree_output.status.success() {
         let stderr = String::from_utf8_lossy(&worktree_output.stderr);
-        println!(
-            "     ERROR: Failed: {}",
-            stderr.trim()
-        );
+        println!("     ERROR: Failed: {}", stderr.trim());
 
         // Cleanup on failure
         println!("     Cleaning up...");
@@ -208,10 +174,7 @@ pub fn convert_to_bare(project_name: &str, base_path: &Path, verbose: bool) -> R
         return Err(anyhow::anyhow!("Failed to create worktree"));
     }
 
-    println!(
-        "     OK: Created at {}",
-        worktree_path.display()
-    );
+    println!("     OK: Created at {}", worktree_path.display());
 
     // Step 4: Remove backup
     println!("\n  [4/5] Removing backup...");
@@ -247,9 +210,7 @@ pub fn convert_to_bare(project_name: &str, base_path: &Path, verbose: bool) -> R
     }
 
     println!("\n  {}", "─".repeat(60));
-    println!(
-        "  Conversion complete!"
-    );
+    println!("  Conversion complete!");
     println!("\n  Next steps:");
     println!(
         "     • Your current branch is now at: {}",
