@@ -669,7 +669,7 @@ fn select_projects_interactive(config: &MetaConfig) -> Result<Vec<String>> {
 
     // Simple text-based selection
     for (i, project) in projects.iter().enumerate() {
-        println!("  {} {}", format!("[{}]", i + 1), project);
+        println!("  [{}] {}", i + 1, project);
     }
 
     print!("\n  → Enter project numbers (comma-separated) or 'all': ");
@@ -706,7 +706,7 @@ fn select_projects_for_removal(available: &[String], branch: &str) -> Result<Vec
     println!("  {}", "─".repeat(60));
 
     for (i, project) in available.iter().enumerate() {
-        println!("  {} {}", format!("[{}]", i + 1), project);
+        println!("  [{}] {}", i + 1, project);
     }
 
     print!("\n  → Enter project numbers (comma-separated) or 'all': ");

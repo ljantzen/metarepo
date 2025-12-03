@@ -273,11 +273,8 @@ pub fn import_project_with_options(
                 } else {
                     // Try to prompt user to initialize git repo
                     println!(
-                        "\n  ❓ {}",
-                        format!(
-                            "Directory '{}' exists but is not a git repository",
-                            project_path
-                        )
+                        "\n  ❓ Directory '{}' exists but is not a git repository",
+                        project_path
                     );
                     print!("     → Initialize as git repository? [y/N]: ");
 
@@ -388,10 +385,7 @@ pub fn import_project_with_options(
     }
 
     // Success message
-    println!(
-        "\n  OK: {}",
-        format!("Successfully added '{}'", project_path)
-    );
+    println!("\n  OK: Successfully added '{}'", project_path);
 
     if is_external {
         println!("     └ Created symlink to external directory");
@@ -400,11 +394,8 @@ pub fn import_project_with_options(
     if final_repo_url.starts_with("local:") {
         println!("     └ Updated .meta file (not added to .gitignore)");
         println!(
-            "     INFO: {}",
-            format!(
-                "Run 'meta project update-gitignore {}' after adding a remote",
-                project_path
-            )
+            "     INFO: Run 'meta project update-gitignore {}' after adding a remote",
+            project_path
         );
     } else {
         println!("     └ Updated .meta file and .gitignore");
@@ -497,14 +488,11 @@ fn process_nested_repositories(
     }
 
     println!(
-        "\n  🔍 {}",
-        format!(
-            "Found nested meta repository in '{}'",
-            project_path
-                .file_name()
-                .unwrap_or_default()
-                .to_string_lossy()
-        )
+        "\n  🔍 Found nested meta repository in '{}'",
+        project_path
+            .file_name()
+            .unwrap_or_default()
+            .to_string_lossy()
     );
 
     // Load the nested meta configuration
@@ -513,11 +501,8 @@ fn process_nested_repositories(
     // Check depth before processing
     if context.at_max_depth() {
         println!(
-            "     WARNING: {}",
-            format!(
-                "Skipping nested imports (max depth {} reached)",
-                context.max_depth
-            )
+            "     WARNING: Skipping nested imports (max depth {} reached)",
+            context.max_depth
         );
         return Ok(());
     }
@@ -526,7 +511,7 @@ fn process_nested_repositories(
     let mut import_queue = VecDeque::new();
     for name in nested_meta.projects.keys() {
         if context.should_ignore(name) {
-            println!("     ⏭ {}", format!("Skipping ignored project '{}'", name));
+            println!("     ⏭ Skipping ignored project '{}'", name);
             continue;
         }
         let url = nested_meta
@@ -557,7 +542,7 @@ fn process_nested_repositories(
         }
 
         // Import the nested project
-        println!("\n  📥 {}", format!("Importing nested project '{}'", name));
+        println!("\n  📥 Importing nested project '{}'", name);
         println!("     URL: {}", url);
         println!("     Path: {}", import_path.display());
 
@@ -586,8 +571,8 @@ fn process_nested_repositories(
         let target_path = import_base.join(&import_name);
         if target_path.exists() {
             println!(
-                "     ⏭ {}",
-                format!("Directory '{}' already exists, skipping", import_name)
+                "     ⏭ Directory '{}' already exists, skipping",
+                import_name
             );
             context.exit_import();
             continue;
@@ -598,10 +583,7 @@ fn process_nested_repositories(
         // Handle special URL formats (external:, local:)
         let actual_url = if url.starts_with("external:local:") {
             // This is a local external project, skip it
-            println!(
-                "     ⏭ {}",
-                format!("Skipping local external project '{}'", name)
-            );
+            println!("     ⏭ Skipping local external project '{}'", name);
             context.exit_import();
             continue;
         } else if url.starts_with("external:") {
@@ -609,7 +591,7 @@ fn process_nested_repositories(
             url.strip_prefix("external:").unwrap_or(&url).to_string()
         } else if url.starts_with("local:") {
             // Local projects don't need cloning
-            println!("     ⏭ {}", format!("Skipping local project '{}'", name));
+            println!("     ⏭ Skipping local project '{}'", name);
             context.exit_import();
             continue;
         } else {
@@ -619,10 +601,7 @@ fn process_nested_repositories(
         println!("     Cloning into '{}'", target_path.display());
         // Nested imports don't support bare repositories for now
         if let Err(e) = clone_with_auth(&actual_url, &target_path, false) {
-            eprintln!(
-                "     ERROR: {}",
-                format!("Failed to clone '{}': {}", name, e)
-            );
+            eprintln!("     ERROR: Failed to clone '{}': {}", name, e);
             context.exit_import();
             continue;
         }
@@ -631,11 +610,8 @@ fn process_nested_repositories(
         if nested_config.recursive_import && !context.at_max_depth() {
             if let Err(e) = process_nested_repositories(&import_path, context, nested_config) {
                 eprintln!(
-                    "     WARNING: {}",
-                    format!(
-                        "Warning: Failed to process nested repos in '{}': {}",
-                        name, e
-                    )
+                    "     WARNING: Failed to process nested repos in '{}': {}",
+                    name, e
                 );
             }
         }
@@ -772,10 +748,10 @@ pub fn list_projects(base_path: &Path) -> Result<()> {
         print!("  {}", name);
 
         match status_color {
-            "green" => println!(" {}", format!("[{}]", status_text)),
-            "cyan" => println!(" {}", format!("[{}]", status_text)),
-            "yellow" => println!(" {}", format!("[{}]", status_text)),
-            "red" => println!(" {}", format!("[{}]", status_text)),
+            "green" => println!(" [{}]", status_text),
+            "cyan" => println!(" [{}]", status_text),
+            "yellow" => println!(" [{}]", status_text),
+            "red" => println!(" [{}]", status_text),
             _ => println!(" [{}]", status_text),
         }
 
@@ -1057,10 +1033,8 @@ pub fn show_project_tree(base_path: &Path) -> Result<()> {
             // Determine display based on node type
             let name_display = if is_symlink {
                 node.name.to_string() // Symlinks in magenta
-            } else if node.is_meta {
-                format!("{}/", node.name) // Meta repos with trailing slash
-            } else if node.is_directory {
-                format!("{}/", node.name) // Directories in bright blue with trailing slash
+            } else if node.is_meta || node.is_directory {
+                format!("{}/", node.name) // Meta repos and directories with trailing slash
             } else {
                 node.name.to_string() // Regular projects
             };
@@ -1085,11 +1059,7 @@ pub fn show_project_tree(base_path: &Path) -> Result<()> {
 
     println!();
     println!("  {}", "─".repeat(60));
-    println!(
-        "  {}  {}  Project  Symlink",
-        format!("{}/", "Meta repository"),
-        format!("{}/", "Directory")
-    );
+    println!("  Meta repository/  Directory/  Project  Symlink");
     println!();
 
     Ok(())
@@ -1136,7 +1106,7 @@ pub fn update_projects(
             continue;
         }
 
-        println!("\n  📥 {}", format!("Updating '{}'", name));
+        println!("\n  📥 Updating '{}'", name);
 
         // Open the repository
         match Repository::open(&project_path) {
@@ -1160,40 +1130,26 @@ pub fn update_projects(
                                     Some(current_depth - 1),
                                     verbose,
                                 ) {
-                                    eprintln!(
-                                        "     WARNING: {}",
-                                        format!("Failed to update nested: {}", e)
-                                    );
+                                    eprintln!("     WARNING: Failed to update nested: {}", e);
                                 }
                             }
                         }
                     }
                     Err(e) => {
-                        eprintln!("     ERROR: {}", format!("Failed to update: {}", e));
+                        eprintln!("     ERROR: Failed to update: {}", e);
                         failed += 1;
                     }
                 }
             }
             Err(e) => {
-                eprintln!(
-                    "     ERROR: {}",
-                    format!("Failed to open repository: {}", e)
-                );
+                eprintln!("     ERROR: Failed to open repository: {}", e);
                 failed += 1;
             }
         }
     }
 
     println!("\n  {}", "─".repeat(60));
-    println!(
-        "  Summary: {} projects updated, {} failed",
-        updated,
-        if failed > 0 {
-            failed.to_string()
-        } else {
-            failed.to_string()
-        }
-    );
+    println!("  Summary: {} projects updated, {} failed", updated, failed);
     println!();
 
     Ok(())
@@ -1409,23 +1365,17 @@ pub fn remove_project(project_name: &str, base_path: &Path, force: bool) -> Resu
     // Remove from .gitignore
     remove_from_gitignore(base_path, project_name)?;
 
-    println!(
-        "\n  DELETE: {}",
-        format!("Removed project '{}'", project_name)
-    );
+    println!("\n  DELETE: Removed project '{}'", project_name);
     println!("     └ Removed from .meta file");
 
     // Optionally remove the directory
     if project_path.exists() {
         if force {
             std::fs::remove_dir_all(&project_path)?;
-            println!("     └ {}", format!("Deleted directory '{}'", project_name));
+            println!("     └ Deleted directory '{}'", project_name);
         } else {
-            println!(
-                "     └ {}",
-                format!("Directory '{}' kept on disk", project_name)
-            );
-            println!("       {}", format!("To remove: rm -rf {}", project_name));
+            println!("     └ Directory '{}' kept on disk", project_name);
+            println!("       To remove: rm -rf {}", project_name);
         }
     }
 
@@ -1479,8 +1429,8 @@ pub fn update_project_gitignore(project_name: &str, base_path: &Path) -> Result<
     // Check if project is currently marked as local
     if !current_url.starts_with("local:") {
         println!(
-            "\n  INFO: {}",
-            format!("Project '{}' already has a remote URL", project_name)
+            "\n  INFO: Project '{}' already has a remote URL",
+            project_name
         );
         return Ok(());
     }
@@ -1508,14 +1458,14 @@ pub fn update_project_gitignore(project_name: &str, base_path: &Path) -> Result<
         // Add to gitignore
         update_gitignore(base_path, project_name)?;
 
-        println!("\n  OK: {}", format!("Updated project '{}'", project_name));
+        println!("\n  OK: Updated project '{}'", project_name);
         println!("     Remote: {}", detected_url);
         println!("     └ Added to .gitignore");
         println!();
     } else {
         println!(
-            "\n  WARNING: {}",
-            format!("Project '{}' still has no remote", project_name)
+            "\n  WARNING: Project '{}' still has no remote",
+            project_name
         );
         println!("     └ Add a remote with: git remote add origin <url>");
         println!();
@@ -1645,8 +1595,8 @@ pub fn rename_project(
     }
 
     println!(
-        "\n  OK: {}",
-        format!("Successfully renamed '{}' to '{}'", old_name, new_name)
+        "\n  OK: Successfully renamed '{}' to '{}'",
+        old_name, new_name
     );
     println!();
 

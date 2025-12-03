@@ -13,6 +13,17 @@ use crate::plugins::shared::{OutputManager, ProgressIndicator};
 pub use iterator::{ProjectInfo, ProjectIterator};
 pub use plugin::ExecPlugin;
 
+/// Options for executing commands
+#[derive(Default)]
+pub struct ExecuteOptions {
+    pub include_main: bool,
+    pub parallel: bool,
+    pub no_progress: bool,
+    pub streaming: bool,
+    pub verbose: bool,
+    pub show_progress: bool,
+}
+
 pub fn execute_command_in_directory<P: AsRef<Path>>(
     command: &str,
     args: &[&str],
@@ -65,43 +76,37 @@ pub fn execute_with_iterator(
     command: &str,
     args: &[&str],
     iterator: ProjectIterator,
-    include_main: bool,
-    parallel: bool,
-    no_progress: bool,
-    streaming: bool,
-    verbose: bool,
+    options: ExecuteOptions,
 ) -> Result<()> {
     let projects: Vec<_> = iterator.collect();
 
-    if projects.is_empty() && !include_main {
+    if projects.is_empty() && !options.include_main {
         println!("No projects matched the criteria");
         return Ok(());
     }
 
-    let total = projects.len() + if include_main { 1 } else { 0 };
-    println!("Executing command in {} project(s)", total);
-    if verbose {
+    if options.verbose {
         println!("Command: {} {}", command, args.join(" "));
     }
-    if parallel {
+    if options.parallel {
         println!("Mode: Parallel execution");
     }
     println!();
 
     // Execute in main repository if requested
-    if include_main {
+    if options.include_main {
         let meta_file =
             MetaConfig::find_meta_file().ok_or_else(|| anyhow::anyhow!("No .meta file found"))?;
         let base_path = meta_file.parent().unwrap();
 
         println!("=== Main Repository ===");
-        if let Err(e) = execute_command_in_directory(command, args, base_path, verbose) {
+        if let Err(e) = execute_command_in_directory(command, args, base_path, options.verbose) {
             eprintln!("Failed in main repository: {}", e);
         }
     }
 
     // Execute in projects
-    if parallel && projects.len() > 1 && !streaming {
+    if options.parallel && projects.len() > 1 && !options.streaming {
         // Use buffered output for parallel execution
         let project_names: Vec<String> = projects.iter().map(|p| p.name.clone()).collect();
         let output_manager = Arc::new(OutputManager::new(project_names));
@@ -110,15 +115,15 @@ pub fn execute_with_iterator(
             format!("{} {}", command, args.join(" ")),
         );
 
-        println!(
-            "Executing command in {} project(s) [parallel mode]",
-            projects.len()
-        );
-        if verbose {
+        if options.verbose {
+            println!(
+                "Executing command in {} project(s) [parallel mode]",
+                projects.len()
+            );
             println!("Command: {} {}", command, args.join(" "));
         }
 
-        if !no_progress {
+        if !options.no_progress {
             progress_indicator.start();
         }
 
@@ -175,33 +180,38 @@ pub fn execute_with_iterator(
         }
 
         // Stop progress indicator and display results
-        if !no_progress {
+        if !options.no_progress {
             progress_indicator.stop();
         } else {
             // Clear any partial output and show completion without progress
             print!("\r\x1b[K");
         }
-        output_manager.display_final_results(verbose);
+        output_manager.display_final_results(options.verbose);
 
         return Ok(());
     } else {
         for (idx, project) in projects.iter().enumerate() {
-            println!("[{}/{}] {}", idx + 1, projects.len(), project.name);
+            if options.show_progress {
+                println!("[{}/{}] {}", idx + 1, projects.len(), project.name);
+            } else {
+                println!("{}", project.name);
+            }
 
             if !project.exists {
                 println!("  WARNING: Directory does not exist, skipping");
                 continue;
             }
 
-            if let Err(e) = execute_command_in_directory(command, args, &project.path, verbose) {
+            if let Err(e) =
+                execute_command_in_directory(command, args, &project.path, options.verbose)
+            {
                 eprintln!("  ERROR: Failed: {}", e);
-            } else if verbose {
+            } else if options.verbose {
                 println!("  OK: Success");
             }
         }
     }
 
-    println!("\n=== Execution Complete ===");
     Ok(())
 }
 
@@ -239,7 +249,15 @@ pub fn execute_in_all_projects(command: &str, args: &[&str]) -> Result<()> {
     let base_path = meta_file.parent().unwrap();
 
     let iterator = ProjectIterator::new(&config, base_path);
-    execute_with_iterator(command, args, iterator, true, false, false, false, false)
+    execute_with_iterator(
+        command,
+        args,
+        iterator,
+        ExecuteOptions {
+            include_main: true,
+            ..Default::default()
+        },
+    )
 }
 
 pub fn execute_in_specific_projects(
@@ -280,6 +298,5 @@ pub fn execute_in_specific_projects(
         }
     }
 
-    println!("\n=== Execution Complete ===");
     Ok(())
 }

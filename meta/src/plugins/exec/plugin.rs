@@ -1,4 +1,4 @@
-use super::{execute_in_specific_projects, execute_with_iterator, ProjectIterator};
+use super::{execute_in_specific_projects, execute_with_iterator, ExecuteOptions, ProjectIterator};
 use anyhow::Result;
 use clap::ArgMatches;
 use metarepo_core::{arg, command, plugin, BasePlugin, MetaConfig, MetaPlugin, RuntimeConfig};
@@ -126,21 +126,16 @@ fn handle_exec(matches: &ArgMatches, runtime_config: &RuntimeConfig) -> Result<(
                     iterator = iterator.filter_git_repos();
                 }
 
-                let parallel = matches.get_flag("parallel");
-                let include_main = matches.get_flag("include-main");
-                let no_progress = matches.get_flag("no-progress");
-                let streaming = matches.get_flag("streaming");
+                let options = ExecuteOptions {
+                    include_main: matches.get_flag("include-main"),
+                    parallel: matches.get_flag("parallel"),
+                    no_progress: matches.get_flag("no-progress"),
+                    streaming: matches.get_flag("streaming"),
+                    verbose: runtime_config.verbose,
+                    show_progress: matches.get_flag("progress"),
+                };
 
-                execute_with_iterator(
-                    command,
-                    &args,
-                    iterator,
-                    include_main,
-                    parallel,
-                    no_progress,
-                    streaming,
-                    runtime_config.verbose,
-                )?;
+                execute_with_iterator(command, &args, iterator, options)?;
                 return Ok(());
             }
 
@@ -217,21 +212,16 @@ fn handle_exec(matches: &ArgMatches, runtime_config: &RuntimeConfig) -> Result<(
                 iterator = iterator.filter_git_repos();
             }
 
-            let parallel = matches.get_flag("parallel");
-            let include_main = matches.get_flag("include-main");
-            let no_progress = matches.get_flag("no-progress");
-            let streaming = matches.get_flag("streaming");
+            let options = ExecuteOptions {
+                include_main: matches.get_flag("include-main"),
+                parallel: matches.get_flag("parallel"),
+                no_progress: matches.get_flag("no-progress"),
+                streaming: matches.get_flag("streaming"),
+                verbose: runtime_config.verbose,
+                show_progress: matches.get_flag("progress"),
+            };
 
-            execute_with_iterator(
-                command,
-                &args,
-                iterator,
-                include_main,
-                parallel,
-                no_progress,
-                streaming,
-                runtime_config.verbose,
-            )?;
+            execute_with_iterator(command, &args, iterator, options)?;
 
             Ok(())
         }
@@ -320,6 +310,12 @@ impl MetaPlugin for ExecPlugin {
                 clap::Arg::new("no-progress")
                     .long("no-progress")
                     .help("Disable progress indicators (useful for CI environments)")
+                    .action(clap::ArgAction::SetTrue),
+            )
+            .arg(
+                clap::Arg::new("progress")
+                    .long("progress")
+                    .help("Show progress counter [N/M] for each project")
                     .action(clap::ArgAction::SetTrue),
             )
             .arg(

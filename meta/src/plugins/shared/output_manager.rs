@@ -167,7 +167,10 @@ impl OutputManager {
         );
 
         if !failed_projects.is_empty() {
-            println!("  Failed: {}", failed_projects.join(", "));
+            println!("  Failed:");
+            for project in &failed_projects {
+                println!("    {}", project);
+            }
         }
     }
 
