@@ -180,9 +180,11 @@ impl OutputManager {
 
         println!("  {} {}", output.name, duration_str);
 
-        // Display command if available
-        if let Some(command) = &output.command {
-            println!("     > {}", command);
+        // Display command if available and verbose
+        if verbose {
+            if let Some(command) = &output.command {
+                println!("     > {}", command);
+            }
         }
 
         // Display stdout if present

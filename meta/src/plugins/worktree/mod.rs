@@ -188,10 +188,7 @@ pub fn add_worktrees(
             if let Some(project_name) = resolved {
                 selected.push(project_name);
             } else {
-                eprintln!(
-                    "{} Project '{}' not found in workspace",
-                    "ERROR:", project_id
-                );
+                eprintln!("ERROR: Project '{}' not found in workspace", project_id);
             }
         }
         selected
@@ -370,7 +367,7 @@ pub fn add_worktrees(
 
     println!(
         "\nSummary: {} created, {} failed",
-        success_count.to_string(),
+        success_count,
         if !failed.is_empty() {
             failed.len().to_string()
         } else {
@@ -425,8 +422,8 @@ pub fn remove_worktrees(
                 vec![current.to_string()]
             } else {
                 println!(
-                    "{} Current project '{}' doesn't have worktree '{}'",
-                    "ERROR:", current, branch
+                    "ERROR: Current project '{}' doesn't have worktree '{}'",
+                    current, branch
                 );
                 return Ok(());
             }
@@ -518,7 +515,7 @@ pub fn remove_worktrees(
         }
     }
 
-    println!("\nSummary: {} removed", success_count.to_string());
+    println!("\nSummary: {} removed", success_count);
 
     Ok(())
 }
@@ -534,7 +531,7 @@ pub fn list_all_worktrees(base_path: &Path) -> Result<()> {
 
     let config = MetaConfig::load_from_file(&meta_file_path)?;
 
-    println!("\n{}\n", "Workspace Worktrees");
+    println!("\nWorkspace Worktrees\n");
 
     let mut total_worktrees = 0;
     let mut projects_with_worktrees = 0;
@@ -577,8 +574,8 @@ pub fn list_all_worktrees(base_path: &Path) -> Result<()> {
     }
 
     if worktree_map.is_empty() {
-        println!("{}", "No worktrees found in workspace");
-        println!("{}", "Use 'meta worktree add' to create worktrees");
+        println!("No worktrees found in workspace");
+        println!("Use 'meta worktree add' to create worktrees");
     } else {
         // Display worktrees grouped by branch
         for (branch, projects) in worktree_map.iter() {
@@ -596,8 +593,7 @@ pub fn list_all_worktrees(base_path: &Path) -> Result<()> {
 
         println!(
             "Total: {} worktrees across {} projects",
-            total_worktrees.to_string(),
-            projects_with_worktrees.to_string()
+            total_worktrees, projects_with_worktrees
         );
     }
 
@@ -652,10 +648,10 @@ pub fn prune_worktrees(base_path: &Path, dry_run: bool) -> Result<()> {
     }
 
     if dry_run {
-        println!("\n{}", "Check complete");
-        println!("{}", "Run without --dry-run to remove stale worktrees");
+        println!("\nCheck complete");
+        println!("Run without --dry-run to remove stale worktrees");
     } else {
-        println!("\n{}", "Prune complete");
+        println!("\nPrune complete");
     }
 
     Ok(())
@@ -676,10 +672,7 @@ fn select_projects_interactive(config: &MetaConfig) -> Result<Vec<String>> {
         println!("  {} {}", format!("[{}]", i + 1), project);
     }
 
-    print!(
-        "\n  {} Enter project numbers (comma-separated) or 'all': ",
-        "→"
-    );
+    print!("\n  → Enter project numbers (comma-separated) or 'all': ");
     io::stdout().flush()?;
 
     let mut input = String::new();
@@ -716,10 +709,7 @@ fn select_projects_for_removal(available: &[String], branch: &str) -> Result<Vec
         println!("  {} {}", format!("[{}]", i + 1), project);
     }
 
-    print!(
-        "\n  {} Enter project numbers (comma-separated) or 'all': ",
-        "→"
-    );
+    print!("\n  → Enter project numbers (comma-separated) or 'all': ");
     io::stdout().flush()?;
 
     let mut input = String::new();
@@ -751,12 +741,12 @@ fn prompt_for_starting_point() -> Result<String> {
 
     println!("\n  Branch doesn't exist. Create it from:");
     println!("  {}", "─".repeat(60));
-    println!("  {} HEAD (current commit)", "[1]");
-    println!("  {} origin/main", "[2]");
-    println!("  {} origin/develop", "[3]");
-    println!("  {} Custom ref", "[4]");
+    println!("  [1] HEAD (current commit)");
+    println!("  [2] origin/main");
+    println!("  [3] origin/develop");
+    println!("  [4] Custom ref");
 
-    print!("\n  {} Select option [1-4]: ", "→");
+    print!("\n  → Select option [1-4]: ");
     io::stdout().flush()?;
 
     let mut input = String::new();
@@ -768,7 +758,7 @@ fn prompt_for_starting_point() -> Result<String> {
         "2" => Ok("origin/main".to_string()),
         "3" => Ok("origin/develop".to_string()),
         "4" => {
-            print!("  {} Enter custom ref (branch/tag/commit): ", "→");
+            print!("  → Enter custom ref (branch/tag/commit): ");
             io::stdout().flush()?;
             let mut custom = String::new();
             io::stdin().read_line(&mut custom)?;

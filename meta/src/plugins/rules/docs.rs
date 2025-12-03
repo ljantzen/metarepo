@@ -10,15 +10,9 @@ fn print_full_documentation_formatted(ai_mode: bool) {
     if ai_mode {
         print_ai_optimized_docs();
     } else {
-        println!(
-            "{}",
-            "═══════════════════════════════════════════════════════════════"
-        );
-        println!("{}", "           METAREPO RULES - COMPLETE DOCUMENTATION");
-        println!(
-            "{}",
-            "═══════════════════════════════════════════════════════════════"
-        );
+        println!("═══════════════════════════════════════════════════════════════");
+        println!("           METAREPO RULES - COMPLETE DOCUMENTATION");
+        println!("═══════════════════════════════════════════════════════════════");
         println!();
 
         print_overview();
@@ -30,12 +24,12 @@ fn print_full_documentation_formatted(ai_mode: bool) {
 }
 
 pub fn print_directory_rule_docs() {
-    println!("{}", "DIRECTORY RULES");
-    println!("{}", "═══════════════");
+    println!("DIRECTORY RULES");
+    println!("═══════════════");
     println!();
     println!("Directory rules ensure specific directories exist in your projects.");
     println!();
-    println!("{}", "Configuration:");
+    println!("Configuration:");
     println!("```yaml");
     println!("directories:");
     println!("  - path: src           # Path relative to project root");
@@ -43,22 +37,22 @@ pub fn print_directory_rule_docs() {
     println!("    description: Source code directory");
     println!("```");
     println!();
-    println!("{}", "Properties:");
-    println!("  • {}: Directory path relative to project root", "path");
-    println!("  • {}: Whether the directory must exist", "required");
-    println!("  • {}: Human-readable description", "description");
+    println!("Properties:");
+    println!("  • path: Directory path relative to project root");
+    println!("  • required: Whether the directory must exist");
+    println!("  • description: Human-readable description");
     println!();
-    println!("{}", "Auto-fix:");
+    println!("Auto-fix:");
     println!("  OK: Missing directories can be automatically created with --fix");
 }
 
 pub fn print_component_rule_docs() {
-    println!("{}", "COMPONENT RULES");
-    println!("{}", "═══════════════");
+    println!("COMPONENT RULES");
+    println!("═══════════════");
     println!();
     println!("Component rules validate folder structures for components matching a pattern.");
     println!();
-    println!("{}", "Configuration:");
+    println!("Configuration:");
     println!("```yaml");
     println!("components:");
     println!("  - pattern: components/**/  # Glob pattern for component dirs");
@@ -69,32 +63,26 @@ pub fn print_component_rule_docs() {
     println!("    description: Vue component structure");
     println!("```");
     println!();
-    println!("{}", "Properties:");
-    println!(
-        "  • {}: Glob pattern to match component directories",
-        "pattern"
-    );
-    println!("  • {}: List of required files/directories", "structure");
-    println!("  • {}: Human-readable description", "description");
+    println!("Properties:");
+    println!("  • pattern: Glob pattern to match component directories");
+    println!("  • structure: List of required files/directories");
+    println!("  • description: Human-readable description");
     println!();
-    println!("{}", "Placeholders:");
-    println!(
-        "  • {} is replaced with the actual component name",
-        "[ComponentName]"
-    );
+    println!("Placeholders:");
+    println!("  • [ComponentName] is replaced with the actual component name");
     println!();
-    println!("{}", "Auto-fix:");
+    println!("Auto-fix:");
     println!("  OK: Missing directories in structure can be created");
     println!("  ERROR: Missing files must be created manually");
 }
 
 pub fn print_naming_rule_docs() {
-    println!("{}", "NAMING RULES");
-    println!("{}", "════════════");
+    println!("NAMING RULES");
+    println!("════════════");
     println!();
     println!("Naming rules enforce consistent file and directory naming conventions.");
     println!();
-    println!("{}", "Configuration:");
+    println!("Configuration:");
     println!("```yaml");
     println!("naming:");
     println!("  - pattern: 'src/components/**/*.tsx'");
@@ -103,26 +91,26 @@ pub fn print_naming_rule_docs() {
     println!("    description: React components must be PascalCase");
     println!("```");
     println!();
-    println!("{}", "Properties:");
-    println!("  • {}: Glob pattern for files to check", "pattern");
-    println!("  • {}: Regex pattern for valid names", "naming_pattern");
-    println!("  • {}: Optional naming style hint", "case_style");
+    println!("Properties:");
+    println!("  • pattern: Glob pattern for files to check");
+    println!("  • naming_pattern: Regex pattern for valid names");
+    println!("  • case_style: Optional naming style hint");
     println!("    Options: PascalCase, camelCase, snake_case, UPPER_CASE, kebab-case");
-    println!("  • {}: Human-readable description", "description");
+    println!("  • description: Human-readable description");
     println!();
-    println!("{}", "Examples:");
+    println!("Examples:");
     println!("  • React hooks: pattern: 'hooks/*.ts', naming: '^use[A-Z].*'");
     println!("  • Constants: pattern: 'constants/*.ts', case_style: 'UPPER_CASE'");
     println!("  • CSS modules: pattern: '*.module.css', case_style: 'kebab-case'");
 }
 
 pub fn print_dependency_rule_docs() {
-    println!("{}", "DEPENDENCY RULES");
-    println!("{}", "════════════════");
+    println!("DEPENDENCY RULES");
+    println!("════════════════");
     println!();
     println!("Dependency rules control which packages can be used in your projects.");
     println!();
-    println!("{}", "Configuration:");
+    println!("Configuration:");
     println!("```yaml");
     println!("dependencies:");
     println!("  - forbidden:");
@@ -134,27 +122,24 @@ pub fn print_dependency_rule_docs() {
     println!("    description: Package constraints");
     println!("```");
     println!();
-    println!("{}", "Properties:");
-    println!(
-        "  • {}: List of packages that must not be used",
-        "forbidden"
-    );
-    println!("  • {}: Map of required packages and versions", "required");
-    println!("  • {}: Maximum dependency depth", "max_depth");
-    println!("  • {}: Human-readable description", "description");
+    println!("Properties:");
+    println!("  • forbidden: List of packages that must not be used");
+    println!("  • required: Map of required packages and versions");
+    println!("  • max_depth: Maximum dependency depth");
+    println!("  • description: Human-readable description");
     println!();
-    println!("{}", "Supported Files:");
+    println!("Supported Files:");
     println!("  • package.json (Node.js projects)");
     println!("  • Cargo.toml (Rust projects)");
 }
 
 pub fn print_import_rule_docs() {
-    println!("{}", "IMPORT RULES");
-    println!("{}", "════════════");
+    println!("IMPORT RULES");
+    println!("════════════");
     println!();
     println!("Import rules control module boundaries and import patterns.");
     println!();
-    println!("{}", "Configuration:");
+    println!("Configuration:");
     println!("```yaml");
     println!("imports:");
     println!("  - source_pattern: 'src/components/**/*.tsx'");
@@ -165,27 +150,21 @@ pub fn print_import_rule_docs() {
     println!("    description: Component import constraints");
     println!("```");
     println!();
-    println!("{}", "Properties:");
-    println!("  • {}: Files to check", "source_pattern");
-    println!("  • {}: List of allowed import patterns", "allowed_imports");
-    println!(
-        "  • {}: List of forbidden import patterns",
-        "forbidden_imports"
-    );
-    println!(
-        "  • {}: Require absolute over relative imports",
-        "require_absolute"
-    );
-    println!("  • {}: Maximum import depth", "max_depth");
+    println!("Properties:");
+    println!("  • source_pattern: Files to check");
+    println!("  • allowed_imports: List of allowed import patterns");
+    println!("  • forbidden_imports: List of forbidden import patterns");
+    println!("  • require_absolute: Require absolute over relative imports");
+    println!("  • max_depth: Maximum import depth");
 }
 
 pub fn print_documentation_rule_docs() {
-    println!("{}", "DOCUMENTATION RULES");
-    println!("{}", "═══════════════════");
+    println!("DOCUMENTATION RULES");
+    println!("═══════════════════");
     println!();
     println!("Documentation rules ensure proper documentation coverage.");
     println!();
-    println!("{}", "Configuration:");
+    println!("Configuration:");
     println!("```yaml");
     println!("documentation:");
     println!("  - pattern: 'src/**/*.ts'");
@@ -198,27 +177,21 @@ pub fn print_documentation_rule_docs() {
     println!("    description: TypeScript documentation requirements");
     println!("```");
     println!();
-    println!("{}", "Properties:");
-    println!("  • {}: Files to check", "pattern");
-    println!("  • {}: Require file header comments", "require_header");
-    println!("  • {}: Require code examples", "require_examples");
-    println!(
-        "  • {}: Minimum description length",
-        "min_description_length"
-    );
-    println!(
-        "  • {}: Required documentation sections",
-        "required_sections"
-    );
+    println!("Properties:");
+    println!("  • pattern: Files to check");
+    println!("  • require_header: Require file header comments");
+    println!("  • require_examples: Require code examples");
+    println!("  • min_description_length: Minimum description length");
+    println!("  • required_sections: Required documentation sections");
 }
 
 pub fn print_size_rule_docs() {
-    println!("{}", "SIZE RULES");
-    println!("{}", "══════════");
+    println!("SIZE RULES");
+    println!("══════════");
     println!();
     println!("Size rules control file complexity and size limits.");
     println!();
-    println!("{}", "Configuration:");
+    println!("Configuration:");
     println!("```yaml");
     println!("size:");
     println!("  - pattern: '**/*.js'");
@@ -228,21 +201,21 @@ pub fn print_size_rule_docs() {
     println!("    description: JavaScript file size limits");
     println!("```");
     println!();
-    println!("{}", "Properties:");
-    println!("  • {}: Files to check", "pattern");
-    println!("  • {}: Maximum line count", "max_lines");
-    println!("  • {}: Maximum file size in bytes", "max_bytes");
-    println!("  • {}: Maximum number of functions", "max_functions");
-    println!("  • {}: Maximum cyclomatic complexity", "max_complexity");
+    println!("Properties:");
+    println!("  • pattern: Files to check");
+    println!("  • max_lines: Maximum line count");
+    println!("  • max_bytes: Maximum file size in bytes");
+    println!("  • max_functions: Maximum number of functions");
+    println!("  • max_complexity: Maximum cyclomatic complexity");
 }
 
 pub fn print_security_rule_docs() {
-    println!("{}", "SECURITY RULES");
-    println!("{}", "══════════════");
+    println!("SECURITY RULES");
+    println!("══════════════");
     println!();
     println!("Security rules check for common security issues in your code.");
     println!();
-    println!("{}", "Configuration:");
+    println!("Configuration:");
     println!("```yaml");
     println!("security:");
     println!("  - pattern: '**/*.{{js,ts,py}}'");
@@ -256,27 +229,21 @@ pub fn print_security_rule_docs() {
     println!("    description: Basic security checks");
     println!("```");
     println!();
-    println!("{}", "Properties:");
-    println!("  • {}: Glob pattern for files to check", "pattern");
-    println!("  • {}: Regex patterns to flag", "forbidden_patterns");
-    println!(
-        "  • {}: Functions that shouldn't be used",
-        "forbidden_functions"
-    );
-    println!("  • {}: Flag non-HTTPS URLs", "require_https");
-    println!(
-        "  • {}: Check for hardcoded secrets",
-        "no_hardcoded_secrets"
-    );
+    println!("Properties:");
+    println!("  • pattern: Glob pattern for files to check");
+    println!("  • forbidden_patterns: Regex patterns to flag");
+    println!("  • forbidden_functions: Functions that shouldn't be used");
+    println!("  • require_https: Flag non-HTTPS URLs");
+    println!("  • no_hardcoded_secrets: Check for hardcoded secrets");
 }
 
 pub fn print_file_rule_docs() {
-    println!("{}", "FILE RULES");
-    println!("{}", "══════════");
+    println!("FILE RULES");
+    println!("══════════");
     println!();
     println!("File rules ensure files matching a pattern have required companions.");
     println!();
-    println!("{}", "Configuration:");
+    println!("Configuration:");
     println!("```yaml");
     println!("files:");
     println!("  - pattern: '**/*.vue'      # Files to check");
@@ -286,34 +253,28 @@ pub fn print_file_rule_docs() {
     println!("    description: Vue files must have tests and stories");
     println!("```");
     println!();
-    println!("{}", "Properties:");
-    println!("  • {}: Glob pattern for files to check", "pattern");
-    println!(
-        "  • {}: Map of required file types and their patterns",
-        "requires"
-    );
-    println!("  • {}: Human-readable description", "description");
+    println!("Properties:");
+    println!("  • pattern: Glob pattern for files to check");
+    println!("  • requires: Map of required file types and their patterns");
+    println!("  • description: Human-readable description");
     println!();
-    println!("{}", "Special Patterns:");
-    println!(
-        "  • {}: Looks for test annotations within the file itself",
-        "#[test]"
-    );
-    println!("  • {}: Replaced with the base filename", "*");
+    println!("Special Patterns:");
+    println!("  • #[test]: Looks for test annotations within the file itself");
+    println!("  • *: Replaced with the base filename");
     println!();
-    println!("{}", "Auto-fix:");
+    println!("Auto-fix:");
     println!("  ERROR: Companion files must be created manually");
 }
 
 fn print_overview() {
-    println!("{}", "OVERVIEW");
-    println!("{}", "════════");
+    println!("OVERVIEW");
+    println!("════════");
     println!();
     println!("The Rules plugin enforces consistent project structure across your workspace.");
     println!("It validates directories, component structures, file dependencies, naming");
     println!("conventions, security standards, and more.");
     println!();
-    println!("{}", "Key Features:");
+    println!("Key Features:");
     println!("  • Nine rule types for comprehensive validation");
     println!("  • YAML/JSON configuration support");
     println!("  • Project-specific and workspace-wide rules");
@@ -323,49 +284,37 @@ fn print_overview() {
 }
 
 fn print_rule_types() {
-    println!("{}", "RULE TYPES");
-    println!("{}", "══════════");
+    println!("RULE TYPES");
+    println!("══════════");
     println!();
-    println!("{}", "Structure Rules:");
-    println!("  1. {} - Ensure directories exist", "Directory Rules");
-    println!(
-        "  2. {} - Validate component folder structures",
-        "Component Rules"
-    );
-    println!("  3. {} - Check for required companion files", "File Rules");
+    println!("Structure Rules:");
+    println!("  1. Directory Rules - Ensure directories exist");
+    println!("  2. Component Rules - Validate component folder structures");
+    println!("  3. File Rules - Check for required companion files");
     println!();
-    println!("{}", "Quality Rules:");
-    println!("  4. {} - Enforce file naming conventions", "Naming Rules");
-    println!("  5. {} - Control file size and complexity", "Size Rules");
-    println!(
-        "  6. {} - Ensure documentation coverage",
-        "Documentation Rules"
-    );
+    println!("Quality Rules:");
+    println!("  4. Naming Rules - Enforce file naming conventions");
+    println!("  5. Size Rules - Control file size and complexity");
+    println!("  6. Documentation Rules - Ensure documentation coverage");
     println!();
-    println!("{}", "Architecture Rules:");
-    println!(
-        "  7. {} - Manage allowed/forbidden packages",
-        "Dependency Rules"
-    );
-    println!("  8. {} - Control import patterns", "Import Rules");
-    println!("  9. {} - Basic security checks", "Security Rules");
+    println!("Architecture Rules:");
+    println!("  7. Dependency Rules - Manage allowed/forbidden packages");
+    println!("  8. Import Rules - Control import patterns");
+    println!("  9. Security Rules - Basic security checks");
     println!();
 }
 
 fn print_configuration_format() {
-    println!("{}", "CONFIGURATION FORMAT");
-    println!("{}", "════════════════════");
+    println!("CONFIGURATION FORMAT");
+    println!("════════════════════");
     println!();
     println!("Rules can be defined in multiple locations:");
     println!();
-    println!("1. {} - Workspace-wide rules", ".rules.yaml");
-    println!("2. {} - Project-specific rules", "<project>/.rules.yaml");
-    println!(
-        "3. {} - Project rules in meta config",
-        ".meta (rules section)"
-    );
+    println!("1. .rules.yaml - Workspace-wide rules");
+    println!("2. <project>/.rules.yaml - Project-specific rules");
+    println!("3. .meta (rules section) - Project rules in meta config");
     println!();
-    println!("{}", "Priority (highest to lowest):");
+    println!("Priority (highest to lowest):");
     println!("  1. Project-specific .rules.yaml");
     println!("  2. Project rules in .meta");
     println!("  3. Workspace .rules.yaml");
@@ -373,11 +322,11 @@ fn print_configuration_format() {
 }
 
 fn print_examples() {
-    println!("{}", "EXAMPLES");
-    println!("{}", "════════");
+    println!("EXAMPLES");
+    println!("════════");
     println!();
 
-    println!("{}", "Vue.js Project:");
+    println!("Vue.js Project:");
     println!("```yaml");
     println!("directories:");
     println!("  - {{ path: src/components, required: true }}");
@@ -392,7 +341,7 @@ fn print_examples() {
     println!("```");
     println!();
 
-    println!("{}", "React TypeScript Project:");
+    println!("React TypeScript Project:");
     println!("```yaml");
     println!("components:");
     println!("  - pattern: 'src/components/**/'");
@@ -404,7 +353,7 @@ fn print_examples() {
     println!("```");
     println!();
 
-    println!("{}", "Rust Project:");
+    println!("Rust Project:");
     println!("```yaml");
     println!("directories:");
     println!("  - {{ path: src, required: true }}");
@@ -419,29 +368,17 @@ fn print_examples() {
 }
 
 fn print_best_practices() {
-    println!("{}", "BEST PRACTICES");
-    println!("{}", "══════════════");
+    println!("BEST PRACTICES");
+    println!("══════════════");
     println!();
-    println!(
-        "1. {} - Define common rules at workspace level",
-        "Start Simple"
-    );
-    println!(
-        "2. {} - Override with project-specific rules as needed",
-        "Be Specific"
-    );
-    println!(
-        "3. {} - Mark optional directories as required: false",
-        "Use Severity"
-    );
-    println!(
-        "4. {} - Add descriptions for team understanding",
-        "Document Rules"
-    );
-    println!("5. {} - Use --fix during development", "Automate");
-    println!("6. {} - Add rules check to CI/CD pipeline", "Enforce");
+    println!("1. Start Simple - Define common rules at workspace level");
+    println!("2. Be Specific - Override with project-specific rules as needed");
+    println!("3. Use Severity - Mark optional directories as required: false");
+    println!("4. Document Rules - Add descriptions for team understanding");
+    println!("5. Automate - Use --fix during development");
+    println!("6. Enforce - Add rules check to CI/CD pipeline");
     println!();
-    println!("{}", "AI Assistant Integration:");
+    println!("AI Assistant Integration:");
     println!("• Run 'meta rules check' before making structural changes");
     println!("• Use 'meta rules docs' to understand project conventions");
     println!("• Apply '--fix' to quickly scaffold required structure");
@@ -449,28 +386,22 @@ fn print_best_practices() {
 }
 
 pub fn print_create_help() {
-    println!("{}", "CREATING RULES");
-    println!("{}", "══════════════");
+    println!("CREATING RULES");
+    println!("══════════════");
     println!();
     println!("Use the create subcommands to add new rules:");
     println!();
-    println!("{}", "Available Commands:");
-    println!(
-        "  {} - Add a directory rule",
-        "meta rules create directory <path>"
-    );
-    println!(
-        "  {} - Add a component rule",
-        "meta rules create component <pattern>"
-    );
-    println!("  {} - Add a file rule", "meta rules create file <pattern>");
+    println!("Available Commands:");
+    println!("  meta rules create directory <path> - Add a directory rule");
+    println!("  meta rules create component <pattern> - Add a component rule");
+    println!("  meta rules create file <pattern> - Add a file rule");
     println!();
-    println!("{}", "Options:");
-    println!("  {} - Target specific project", "--project <name>");
-    println!("  {} - Mark as required (directory rules)", "--required");
-    println!("  {} - Add description", "--description <text>");
+    println!("Options:");
+    println!("  --project <name> - Target specific project");
+    println!("  --required - Mark as required (directory rules)");
+    println!("  --description <text> - Add description");
     println!();
-    println!("{}", "Examples:");
+    println!("Examples:");
     println!("  meta rules create directory src/utils --required");
     println!("  meta rules create component 'components/**/' --project frontend");
     println!("  meta rules create file '**/*.ts' --description 'TypeScript files'");

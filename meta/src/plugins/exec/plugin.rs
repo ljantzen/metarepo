@@ -182,7 +182,12 @@ fn handle_exec(matches: &ArgMatches, runtime_config: &RuntimeConfig) -> Result<(
             if !selected_projects.is_empty() {
                 let project_refs: Vec<&str> =
                     selected_projects.iter().map(|s| s.as_str()).collect();
-                execute_in_specific_projects(command, &args, &project_refs)?;
+                execute_in_specific_projects(
+                    command,
+                    &args,
+                    &project_refs,
+                    runtime_config.verbose,
+                )?;
                 return Ok(());
             }
 

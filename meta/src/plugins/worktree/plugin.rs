@@ -172,7 +172,7 @@ fn handle_add(matches: &ArgMatches, config: &RuntimeConfig) -> Result<()> {
         Some(b) => b.clone(),
         None => {
             if is_interactive() {
-                println!("\n  🌳 {}", "Create a new worktree");
+                println!("\n  🌳 Create a new worktree");
                 prompt_text("Branch name or commit", None, false, non_interactive)?
             } else {
                 return Err(anyhow::anyhow!(
@@ -256,7 +256,7 @@ fn handle_remove(matches: &ArgMatches, config: &RuntimeConfig) -> Result<()> {
         Some(b) => b.clone(),
         None => {
             if is_interactive() {
-                println!("\n  🌳 {}", "Remove a worktree");
+                println!("\n  🌳 Remove a worktree");
                 prompt_text(
                     "Branch name or worktree directory",
                     None,

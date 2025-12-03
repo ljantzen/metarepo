@@ -17,10 +17,13 @@ pub fn execute_command_in_directory<P: AsRef<Path>>(
     command: &str,
     args: &[&str],
     directory: P,
+    verbose: bool,
 ) -> Result<()> {
     let dir = directory.as_ref();
-    println!("\n=== Executing in {} ===", dir.display());
-    println!("Command: {} {}", command, args.join(" "));
+    if verbose {
+        println!("\n=== Executing in {} ===", dir.display());
+        println!("Command: {} {}", command, args.join(" "));
+    }
 
     let mut cmd = Command::new(command);
     cmd.args(args)
@@ -77,7 +80,9 @@ pub fn execute_with_iterator(
 
     let total = projects.len() + if include_main { 1 } else { 0 };
     println!("Executing command in {} project(s)", total);
-    println!("Command: {} {}", command, args.join(" "));
+    if verbose {
+        println!("Command: {} {}", command, args.join(" "));
+    }
     if parallel {
         println!("Mode: Parallel execution");
     }
@@ -90,7 +95,7 @@ pub fn execute_with_iterator(
         let base_path = meta_file.parent().unwrap();
 
         println!("=== Main Repository ===");
-        if let Err(e) = execute_command_in_directory(command, args, base_path) {
+        if let Err(e) = execute_command_in_directory(command, args, base_path, verbose) {
             eprintln!("Failed in main repository: {}", e);
         }
     }
@@ -109,7 +114,9 @@ pub fn execute_with_iterator(
             "Executing command in {} project(s) [parallel mode]",
             projects.len()
         );
-        println!("Command: {} {}", command, args.join(" "));
+        if verbose {
+            println!("Command: {} {}", command, args.join(" "));
+        }
 
         if !no_progress {
             progress_indicator.start();
@@ -186,12 +193,10 @@ pub fn execute_with_iterator(
                 continue;
             }
 
-            if let Err(e) = execute_command_in_directory(command, args, &project.path) {
+            if let Err(e) = execute_command_in_directory(command, args, &project.path, verbose) {
                 eprintln!("  ERROR: Failed: {}", e);
-            } else {
-                if verbose {
-                    println!("  OK: Success");
-                }
+            } else if verbose {
+                println!("  OK: Success");
             }
         }
     }
@@ -237,7 +242,12 @@ pub fn execute_in_all_projects(command: &str, args: &[&str]) -> Result<()> {
     execute_with_iterator(command, args, iterator, true, false, false, false, false)
 }
 
-pub fn execute_in_specific_projects(command: &str, args: &[&str], projects: &[&str]) -> Result<()> {
+pub fn execute_in_specific_projects(
+    command: &str,
+    args: &[&str],
+    projects: &[&str],
+    verbose: bool,
+) -> Result<()> {
     let meta_file = MetaConfig::find_meta_file()
         .ok_or_else(|| anyhow::anyhow!("No .meta file found. Run 'meta init' first."))?;
 
@@ -255,7 +265,7 @@ pub fn execute_in_specific_projects(command: &str, args: &[&str], projects: &[&s
             let full_path = base_path.join(project_name);
 
             if full_path.exists() {
-                if let Err(e) = execute_command_in_directory(command, args, &full_path) {
+                if let Err(e) = execute_command_in_directory(command, args, &full_path, verbose) {
                     eprintln!("Failed in {}: {}", project_name, e);
                 }
             } else {
