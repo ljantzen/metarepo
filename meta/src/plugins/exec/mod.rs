@@ -22,6 +22,7 @@ pub struct ExecuteOptions {
     pub streaming: bool,
     pub verbose: bool,
     pub show_progress: bool,
+    pub stop_on_fail: bool,
 }
 
 pub fn execute_command_in_directory<P: AsRef<Path>>(
@@ -102,6 +103,9 @@ pub fn execute_with_iterator(
         println!("=== Main Repository ===");
         if let Err(e) = execute_command_in_directory(command, args, base_path, options.verbose) {
             eprintln!("Failed in main repository: {}", e);
+            if options.stop_on_fail {
+                return Err(anyhow::anyhow!("Stopping due to failure in main repository"));
+            }
         }
     }
 
@@ -175,8 +179,44 @@ pub fn execute_with_iterator(
             handles.push(handle);
         }
 
-        for handle in handles {
-            handle.join().unwrap();
+        // Wait for handles and check for failures if stop_on_fail is enabled
+        if options.stop_on_fail {
+            for handle in handles {
+                handle.join().unwrap();
+                // Check if any project has failed
+                let (_, _, failed_count) = output_manager.get_status_summary();
+                if failed_count > 0 {
+                    // Find the first failed project by checking each project
+                    let project_names: Vec<String> = projects.iter().map(|p| p.name.clone()).collect();
+                    let mut failed_project = None;
+                    for project_name in &project_names {
+                        if let Some(output) = output_manager.get_project_output(project_name) {
+                            if matches!(output.status, crate::plugins::shared::JobStatus::Failed) {
+                                failed_project = Some(output.name.clone());
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if let Some(failed_project) = failed_project {
+                        // Stop progress indicator
+                        if !options.no_progress {
+                            progress_indicator.stop();
+                        } else {
+                            print!("\r\x1b[K");
+                        }
+                        output_manager.display_final_results(options.verbose);
+                        return Err(anyhow::anyhow!(
+                            "Stopping due to failure in project '{}'",
+                            failed_project
+                        ));
+                    }
+                }
+            }
+        } else {
+            for handle in handles {
+                handle.join().unwrap();
+            }
         }
 
         // Stop progress indicator and display results
@@ -187,6 +227,21 @@ pub fn execute_with_iterator(
             print!("\r\x1b[K");
         }
         output_manager.display_final_results(options.verbose);
+
+        // Check for failures after all completed
+        if options.stop_on_fail {
+            let project_names: Vec<String> = projects.iter().map(|p| p.name.clone()).collect();
+            for project_name in &project_names {
+                if let Some(output) = output_manager.get_project_output(project_name) {
+                    if matches!(output.status, crate::plugins::shared::JobStatus::Failed) {
+                        return Err(anyhow::anyhow!(
+                            "Command failed in project '{}'",
+                            output.name
+                        ));
+                    }
+                }
+            }
+        }
 
         return Ok(());
     } else {
@@ -206,6 +261,12 @@ pub fn execute_with_iterator(
                 execute_command_in_directory(command, args, &project.path, options.verbose)
             {
                 eprintln!("  ERROR: Failed: {}", e);
+                if options.stop_on_fail {
+                    return Err(anyhow::anyhow!(
+                        "Stopping due to failure in project '{}'",
+                        project.name
+                    ));
+                }
             } else if options.verbose {
                 println!("  OK: Success");
             }
@@ -263,7 +324,7 @@ pub fn execute_in_all_projects(command: &str, args: &[&str]) -> Result<()> {
 pub fn execute_in_specific_projects(
     command: &str,
     args: &[&str],
-    projects: &[&str],
+    project_names: &[&str],
     verbose: bool,
 ) -> Result<()> {
     let meta_file = MetaConfig::find_meta_file()
@@ -272,19 +333,13 @@ pub fn execute_in_specific_projects(
     let config = MetaConfig::load_from_file(&meta_file)?;
     let base_path = meta_file.parent().unwrap();
 
-    println!(
-        "Executing '{} {}' in specified projects",
-        command,
-        args.join(" ")
-    );
-
-    for project_name in projects {
-        if let Some(_repo_url) = config.projects.get(*project_name) {
-            let full_path = base_path.join(project_name);
-
-            if full_path.exists() {
-                if let Err(e) = execute_command_in_directory(command, args, &full_path, verbose) {
-                    eprintln!("Failed in {}: {}", project_name, e);
+    for project_name in project_names {
+        if config.projects.contains_key(*project_name) {
+            let project_path = base_path.join(project_name);
+            if project_path.exists() {
+                println!("\n=== {} ===", project_name);
+                if let Err(e) = execute_command_in_directory(command, args, &project_path, verbose) {
+                    eprintln!("Failed in project '{}': {}", project_name, e);
                 }
             } else {
                 println!("\n=== {} ===", project_name);
@@ -299,4 +354,30 @@ pub fn execute_in_specific_projects(
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_execute_options_default() {
+        let options = ExecuteOptions::default();
+        assert!(!options.include_main);
+        assert!(!options.parallel);
+        assert!(!options.no_progress);
+        assert!(!options.streaming);
+        assert!(!options.verbose);
+        assert!(!options.show_progress);
+        assert!(!options.stop_on_fail);
+    }
+
+    #[test]
+    fn test_execute_options_stop_on_fail() {
+        let options = ExecuteOptions {
+            stop_on_fail: true,
+            ..Default::default()
+        };
+        assert!(options.stop_on_fail);
+    }
 }

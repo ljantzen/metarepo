@@ -69,6 +69,7 @@ metarepo/
 - `meta exec --include-main <command>` - Include the main meta repository
 - `meta exec --no-progress` - Disable progress indicators (useful for CI)
 - `meta exec --streaming` - Show output as it happens instead of buffered
+- `meta exec --stop-on-fail` - Stop execution on first failure
 
 **Run Plugin** - Run project-specific scripts defined in .meta
 - `meta run <script>` - Run a named script from .meta configuration
@@ -177,6 +178,9 @@ cargo run --bin meta -- exec --parallel npm test
 
 # Include main repository
 cargo run --bin meta -- exec --include-main git status
+
+# Stop on first failure
+cargo run --bin meta -- exec --stop-on-fail npm test
 
 # Run scripts defined in .meta
 cargo run --bin meta -- run build

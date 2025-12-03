@@ -73,6 +73,11 @@ impl ExecPlugin {
                         arg("include-main")
                             .long("include-main")
                             .help("Include the main meta repository"),
+                    )
+                    .arg(
+                        arg("stop-on-fail")
+                            .long("stop-on-fail")
+                            .help("Stop execution on first failure"),
                     ),
             )
             .handler("exec", handle_exec)
@@ -133,6 +138,7 @@ fn handle_exec(matches: &ArgMatches, runtime_config: &RuntimeConfig) -> Result<(
                     streaming: matches.get_flag("streaming"),
                     verbose: runtime_config.verbose,
                     show_progress: matches.get_flag("progress"),
+                    stop_on_fail: matches.get_flag("stop-on-fail"),
                 };
 
                 execute_with_iterator(command, &args, iterator, options)?;
@@ -219,6 +225,7 @@ fn handle_exec(matches: &ArgMatches, runtime_config: &RuntimeConfig) -> Result<(
                 streaming: matches.get_flag("streaming"),
                 verbose: runtime_config.verbose,
                 show_progress: matches.get_flag("progress"),
+                stop_on_fail: matches.get_flag("stop-on-fail"),
             };
 
             execute_with_iterator(command, &args, iterator, options)?;
@@ -322,6 +329,12 @@ impl MetaPlugin for ExecPlugin {
                 clap::Arg::new("streaming")
                     .long("streaming")
                     .help("Show output as it happens instead of buffered (legacy behavior)")
+                    .action(clap::ArgAction::SetTrue),
+            )
+            .arg(
+                clap::Arg::new("stop-on-fail")
+                    .long("stop-on-fail")
+                    .help("Stop execution on first failure")
                     .action(clap::ArgAction::SetTrue),
             );
 
