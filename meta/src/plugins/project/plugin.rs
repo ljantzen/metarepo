@@ -5,7 +5,6 @@ use super::{
 };
 use anyhow::Result;
 use clap::ArgMatches;
-use colored::Colorize;
 use metarepo_core::{
     arg, command, is_interactive, plugin, prompt_select, prompt_text, prompt_url, BasePlugin,
     MetaPlugin, NonInteractiveMode, RuntimeConfig,
@@ -221,8 +220,7 @@ fn handle_add(matches: &ArgMatches, config: &RuntimeConfig) -> Result<()> {
         None => {
             if is_interactive() {
                 println!(
-                    "\n  📋 {}",
-                    "Add a new project to your workspace".cyan().bold()
+                    "\n  Add a new project to your workspace"
                 );
                 prompt_text("Project name/path", None, false, non_interactive)?
             } else {
@@ -360,7 +358,7 @@ fn handle_update(matches: &ArgMatches, config: &RuntimeConfig) -> Result<()> {
         .get_one::<String>("depth")
         .and_then(|s| s.parse::<usize>().ok());
 
-    update_projects(&base_path, recursive, depth)?;
+    update_projects(&base_path, recursive, depth, config.verbose)?;
     Ok(())
 }
 
@@ -383,8 +381,7 @@ fn handle_remove(matches: &ArgMatches, config: &RuntimeConfig) -> Result<()> {
                 }
 
                 println!(
-                    "\n  🗑️  {}",
-                    "Remove a project from workspace".cyan().bold()
+                    "\n  Remove a project from workspace"
                 );
                 prompt_select("Project to remove", project_names, None, non_interactive)?
             } else {
@@ -432,7 +429,7 @@ fn handle_rename(matches: &ArgMatches, config: &RuntimeConfig) -> Result<()> {
         config.working_dir.clone()
     };
 
-    rename_project(old_name, new_name, &base_path)?;
+    rename_project(old_name, new_name, &base_path, config.verbose)?;
     Ok(())
 }
 
@@ -446,7 +443,7 @@ fn handle_convert_to_bare(matches: &ArgMatches, config: &RuntimeConfig) -> Resul
         config.working_dir.clone()
     };
 
-    convert_to_bare(project, &base_path)?;
+    convert_to_bare(project, &base_path, config.verbose)?;
     Ok(())
 }
 

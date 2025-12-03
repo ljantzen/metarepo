@@ -1,5 +1,4 @@
 use anyhow::Result;
-use colored::*;
 use metarepo_core::MetaConfig;
 use std::path::Path;
 
@@ -30,7 +29,7 @@ pub fn clone_repository(repo_url: &str, target_path: &Path, bare: bool) -> Resul
         .unwrap_or(repo_url);
 
     if bare {
-        println!("Cloning {} as bare repository...", repo_name.bright_white());
+        println!("Cloning {} as bare repository...", repo_name);
 
         // Clone as bare repo to <project>/.git/
         let bare_path = target_path.join(".git");
@@ -43,14 +42,14 @@ pub fn clone_repository(repo_url: &str, target_path: &Path, bare: bool) -> Resul
         println!("Creating default worktree...");
         create_default_worktree(&bare_path, target_path)?;
 
-        println!("{} Complete\n", "✓".green());
+        println!("OK: Complete\n");
     } else {
-        println!("Cloning {}...", repo_name.bright_white());
+        println!("Cloning {}...", repo_name);
 
         // Use shared clone_with_auth for consistent cloning behavior
         clone_with_auth(repo_url, target_path, false)?;
 
-        println!("{} Complete\n", "✓".green());
+        println!("OK: Complete\n");
     }
 
     Ok(())
@@ -99,15 +98,15 @@ pub fn clone_missing_repos() -> Result<()> {
         let project_name = project_path.rsplit('/').next().unwrap_or(project_path);
         println!(
             "[{}/{}] Cloning {}",
-            (i + 1).to_string().cyan(),
-            total.to_string().cyan(),
-            project_name.bright_white()
+            (i + 1),
+            total,
+            project_name
         );
 
         match clone_repository(repo_url, full_path, *is_bare) {
             Ok(_) => success_count += 1,
             Err(e) => {
-                eprintln!("{} Failed: {}\n", "✗".red(), e);
+                eprintln!("ERROR: Failed: {}\n", e);
                 failed_count += 1;
             }
         }
@@ -115,11 +114,11 @@ pub fn clone_missing_repos() -> Result<()> {
 
     println!(
         "Summary: {} cloned, {} failed",
-        success_count.to_string().green(),
+        success_count,
         if failed_count > 0 {
-            failed_count.to_string().red()
+            failed_count
         } else {
-            "0".bright_black()
+            0
         }
     );
 

@@ -1,5 +1,4 @@
 use anyhow::{Context, Result};
-use colored::*;
 use metarepo_core::MetaConfig;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
@@ -166,12 +165,13 @@ pub fn add_worktrees(
     no_hooks: bool,
     current_project: Option<&str>,
     config: &MetaConfig,
+    verbose: bool,
 ) -> Result<()> {
     // Determine which projects to operate on
     let selected_projects = if projects.is_empty() {
         // If no projects specified, check for current project context
         if let Some(current) = current_project {
-            println!("Using current project: {}", current.bold());
+            println!("Using current project: {}", current);
             vec![current.to_string()]
         } else {
             // Interactive selection
@@ -190,7 +190,7 @@ pub fn add_worktrees(
             } else {
                 eprintln!(
                     "{} Project '{}' not found in workspace",
-                    "✗".yellow(),
+                    "ERROR:",
                     project_id
                 );
             }
@@ -205,7 +205,7 @@ pub fn add_worktrees(
 
     println!(
         "\nCreating worktree '{}' for {} project{}\n",
-        branch.bright_white(),
+        branch,
         selected_projects.len(),
         if selected_projects.len() == 1 {
             ""
@@ -221,22 +221,20 @@ pub fn add_worktrees(
         let project_path = base_path.join(project_name);
 
         if !project_path.exists() {
-            eprintln!("{} {} (missing)", "✗".yellow(), project_name.bright_white());
+            eprintln!("ERROR: {} (missing)", project_name);
             failed.push(project_name.clone());
             continue;
         }
 
         if !project_path.join(".git").exists() {
             eprintln!(
-                "{} {} (not a git repo)",
-                "✗".yellow(),
-                project_name.bright_white()
-            );
+                "ERROR: {} (not a git repo)",
+                project_name            );
             failed.push(project_name.clone());
             continue;
         }
 
-        println!("{}", project_name.bold());
+        println!("{}", project_name);
 
         // Determine worktree path based on whether this is a bare repo
         let is_bare = config.is_bare_repo(project_name);
@@ -251,7 +249,7 @@ pub fn add_worktrees(
 
         // Check if worktree already exists
         if worktree_path.exists() {
-            println!("  {} Already exists", "✗".yellow());
+            println!("  ERROR: Already exists");
             continue;
         }
 
@@ -291,9 +289,8 @@ pub fn add_worktrees(
                 Ok(BranchStatus::Remote(remote_ref)) => {
                     // Branch exists remotely, create local tracking branch
                     println!(
-                        "  {} Found remote branch: {}",
-                        "ℹ".cyan(),
-                        remote_ref.bright_white()
+                        "  INFO: Found remote branch: {}",
+                        remote_ref
                     );
                     cmd.arg("-b").arg(branch);
                     cmd.arg(&worktree_path);
@@ -306,24 +303,22 @@ pub fn add_worktrees(
                     } else {
                         // Prompt user for starting point
                         println!(
-                            "  {} Branch '{}' not found",
-                            "⚠".yellow(),
-                            branch.bright_white()
+                            "  WARNING: Branch '{}' not found",
+                            branch
                         );
                         prompt_for_starting_point()?
                     };
 
                     println!(
-                        "  {} Creating new branch from {}",
-                        "✓".green(),
-                        start_point.bright_white()
+                        "  OK: Creating new branch from {}",
+                        start_point
                     );
                     cmd.arg("-b").arg(branch);
                     cmd.arg(&worktree_path);
                     cmd.arg(&start_point);
                 }
                 Err(e) => {
-                    eprintln!("  {} Failed to check branch status: {}", "✗".red(), e);
+                    eprintln!("  ERROR: Failed to check branch status: {}", e);
                     failed.push(project_name.clone());
                     continue;
                 }
@@ -338,7 +333,9 @@ pub fn add_worktrees(
             .context(format!("Failed to create worktree for {}", project_name))?;
 
         if status.success() {
-            println!("  {} Complete", "✓".green());
+            if verbose {
+                println!("  OK: Complete");
+            }
             success_count += 1;
 
             // Execute post-create command if configured and not skipped
@@ -363,31 +360,33 @@ pub fn add_worktrees(
                     match cmd.output() {
                         Ok(hook_output) => {
                             if hook_output.status.success() {
-                                println!("  {} Hook complete", "✓".green());
+                                if verbose {
+                                    println!("  OK: Hook complete");
+                                }
                             } else {
                                 let stderr = String::from_utf8_lossy(&hook_output.stderr);
-                                eprintln!("  {} Hook failed: {}", "✗".yellow(), stderr.trim());
+                                eprintln!("  ERROR: Hook failed: {}", stderr.trim());
                             }
                         }
                         Err(e) => {
-                            eprintln!("  {} Failed to run hook: {}", "✗".yellow(), e);
+                            eprintln!("  ERROR: Failed to run hook: {}", e);
                         }
                     }
                 }
             }
         } else {
-            eprintln!("  {} Failed", "✗".red());
+            eprintln!("  ERROR: Failed");
             failed.push(project_name.clone());
         }
     }
 
     println!(
         "\nSummary: {} created, {} failed",
-        success_count.to_string().green(),
+        success_count.to_string(),
         if !failed.is_empty() {
-            failed.len().to_string().red()
+            failed.len().to_string()
         } else {
-            "0".bright_black()
+            "0".to_string()
         }
     );
 
@@ -401,6 +400,7 @@ pub fn remove_worktrees(
     base_path: &Path,
     force: bool,
     current_project: Option<&str>,
+    verbose: bool,
 ) -> Result<()> {
     let meta_file_path = base_path.join(".meta");
     if !meta_file_path.exists() {
@@ -433,12 +433,12 @@ pub fn remove_worktrees(
         if let Some(current) = current_project {
             // Check if current project has this worktree
             if projects_with_worktree.contains(&current.to_string()) {
-                println!("Using current project: {}", current.bold());
+                println!("Using current project: {}", current);
                 vec![current.to_string()]
             } else {
                 println!(
                     "{} Current project '{}' doesn't have worktree '{}'",
-                    "✗".yellow(),
+                    "ERROR:",
                     current,
                     branch
                 );
@@ -460,7 +460,7 @@ pub fn remove_worktrees(
             if let Some(project_name) = resolved {
                 selected.push(project_name);
             } else {
-                eprintln!("{} Project '{}' not found", "✗".yellow(), project_id);
+                eprintln!("ERROR: Project '{}' not found", project_id);
             }
         }
         selected
@@ -473,7 +473,7 @@ pub fn remove_worktrees(
 
     println!(
         "\nRemoving worktree '{}' from {} project{}\n",
-        branch.bright_white(),
+        branch,
         selected_projects.len(),
         if selected_projects.len() == 1 {
             ""
@@ -487,7 +487,7 @@ pub fn remove_worktrees(
     for project_name in &selected_projects {
         let project_path = base_path.join(project_name);
 
-        println!("{}", project_name.bold());
+        println!("{}", project_name);
 
         let mut cmd = Command::new("git");
         cmd.arg("-C")
@@ -519,18 +519,20 @@ pub fn remove_worktrees(
                     .context(format!("Failed to remove worktree for {}", project_name))?;
 
                 if status.success() {
-                    println!("  {} Complete", "✓".green());
+                    if verbose {
+                println!("  OK: Complete");
+            }
                     success_count += 1;
                 } else {
-                    eprintln!("  {} Failed", "✗".red());
+                    eprintln!("  ERROR: Failed");
                 }
             } else {
-                println!("  {} Not found", "✗".yellow());
+                println!("  ERROR: Not found");
             }
         }
     }
 
-    println!("\nSummary: {} removed", success_count.to_string().green());
+    println!("\nSummary: {} removed", success_count.to_string());
 
     Ok(())
 }
@@ -546,7 +548,7 @@ pub fn list_all_worktrees(base_path: &Path) -> Result<()> {
 
     let config = MetaConfig::load_from_file(&meta_file_path)?;
 
-    println!("\n{}\n", "Workspace Worktrees".bold());
+    println!("\n{}\n", "Workspace Worktrees");
 
     let mut total_worktrees = 0;
     let mut projects_with_worktrees = 0;
@@ -589,25 +591,23 @@ pub fn list_all_worktrees(base_path: &Path) -> Result<()> {
     }
 
     if worktree_map.is_empty() {
-        println!("{}", "No worktrees found in workspace".dimmed());
-        println!("{}", "Use 'meta worktree add' to create worktrees".dimmed());
+        println!("{}", "No worktrees found in workspace");
+        println!("{}", "Use 'meta worktree add' to create worktrees");
     } else {
         // Display worktrees grouped by branch
         for (branch, projects) in worktree_map.iter() {
-            println!("{}", branch.bold().white());
+            println!("{}", branch);
             for (project, path) in projects {
                 let status = if path.exists() {
-                    "active".green()
-                } else {
-                    "missing".red()
-                };
+                    "active"                } else {
+                    "missing"                };
 
                 // Show relative path from project root
                 let relative_path = path.strip_prefix(base_path).unwrap_or(path).display();
 
                 println!(
                     "  {}: {} ({})",
-                    project.bright_blue(),
+                    project,
                     relative_path,
                     status
                 );
@@ -617,9 +617,8 @@ pub fn list_all_worktrees(base_path: &Path) -> Result<()> {
 
         println!(
             "Total: {} worktrees across {} projects",
-            total_worktrees.to_string().cyan(),
-            projects_with_worktrees.to_string().cyan()
-        );
+            total_worktrees.to_string(),
+            projects_with_worktrees.to_string()        );
     }
 
     println!();
@@ -650,7 +649,7 @@ pub fn prune_worktrees(base_path: &Path, dry_run: bool) -> Result<()> {
             continue;
         }
 
-        println!("{}", project_name.bold());
+        println!("{}", project_name);
 
         let mut cmd = Command::new("git");
         cmd.arg("-C")
@@ -673,13 +672,12 @@ pub fn prune_worktrees(base_path: &Path, dry_run: bool) -> Result<()> {
     }
 
     if dry_run {
-        println!("\n{}", "Check complete".dimmed());
+        println!("\n{}", "Check complete");
         println!(
             "{}",
-            "Run without --dry-run to remove stale worktrees".dimmed()
-        );
+            "Run without --dry-run to remove stale worktrees"        );
     } else {
-        println!("\n{}", "Prune complete".green());
+        println!("\n{}", "Prune complete");
     }
 
     Ok(())
@@ -690,24 +688,21 @@ fn select_projects_interactive(config: &MetaConfig) -> Result<Vec<String>> {
     use std::io::{self, Write};
 
     println!(
-        "\n  {} {}",
-        "📋".cyan(),
-        "Select projects for worktree (space to toggle, enter to confirm):".bold()
+        "\n  Select projects for worktree (space to toggle, enter to confirm):"
     );
-    println!("  {}", "─".repeat(60).bright_black());
+    println!("  {}", "─".repeat(60));
 
     let projects: Vec<String> = config.projects.keys().cloned().collect();
     // Removed unused selected variable
 
     // Simple text-based selection
     for (i, project) in projects.iter().enumerate() {
-        println!("  {} {}", format!("[{}]", i + 1).bright_black(), project);
+        println!("  {} {}", format!("[{}]", i + 1), project);
     }
 
     print!(
         "\n  {} Enter project numbers (comma-separated) or 'all': ",
-        "→".bright_black()
-    );
+        "→"    );
     io::stdout().flush()?;
 
     let mut input = String::new();
@@ -738,20 +733,18 @@ fn select_projects_for_removal(available: &[String], branch: &str) -> Result<Vec
     use std::io::{self, Write};
 
     println!(
-        "\n  {} {}",
-        "📋".cyan(),
-        format!("Select projects to remove worktree '{}' from:", branch).bold()
+        "\n  Select projects to remove worktree '{}' from:",
+        branch
     );
-    println!("  {}", "─".repeat(60).bright_black());
+    println!("  {}", "─".repeat(60));
 
     for (i, project) in available.iter().enumerate() {
-        println!("  {} {}", format!("[{}]", i + 1).bright_black(), project);
+        println!("  {} {}", format!("[{}]", i + 1), project);
     }
 
     print!(
         "\n  {} Enter project numbers (comma-separated) or 'all': ",
-        "→".bright_black()
-    );
+        "→"    );
     io::stdout().flush()?;
 
     let mut input = String::new();
@@ -782,17 +775,14 @@ fn prompt_for_starting_point() -> Result<String> {
     use std::io::{self, Write};
 
     println!(
-        "\n  {} {}",
-        "🌿".cyan(),
-        "Branch doesn't exist. Create it from:".bold()
-    );
-    println!("  {}", "─".repeat(60).bright_black());
-    println!("  {} HEAD (current commit)", "[1]".bright_black());
-    println!("  {} origin/main", "[2]".bright_black());
-    println!("  {} origin/develop", "[3]".bright_black());
-    println!("  {} Custom ref", "[4]".bright_black());
+        "\n  Branch doesn't exist. Create it from:"    );
+    println!("  {}", "─".repeat(60));
+    println!("  {} HEAD (current commit)", "[1]");
+    println!("  {} origin/main", "[2]");
+    println!("  {} origin/develop", "[3]");
+    println!("  {} Custom ref", "[4]");
 
-    print!("\n  {} Select option [1-4]: ", "→".bright_black());
+    print!("\n  {} Select option [1-4]: ", "→");
     io::stdout().flush()?;
 
     let mut input = String::new();
@@ -806,15 +796,14 @@ fn prompt_for_starting_point() -> Result<String> {
         "4" => {
             print!(
                 "  {} Enter custom ref (branch/tag/commit): ",
-                "→".bright_black()
-            );
+                "→"            );
             io::stdout().flush()?;
             let mut custom = String::new();
             io::stdin().read_line(&mut custom)?;
             Ok(custom.trim().to_string())
         }
         _ => {
-            println!("  {} Invalid choice, using HEAD", "⚠".yellow());
+            println!("  WARNING: Invalid choice, using HEAD");
             Ok("HEAD".to_string())
         }
     }

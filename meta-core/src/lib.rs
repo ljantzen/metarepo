@@ -52,6 +52,7 @@ pub struct RuntimeConfig {
     pub meta_file_path: Option<PathBuf>,
     pub experimental: bool,
     pub non_interactive: Option<NonInteractiveMode>,
+    pub verbose: bool,
 }
 
 impl RuntimeConfig {
@@ -510,6 +511,7 @@ mod tests {
             meta_file_path: Some(meta_file.clone()),
             experimental: false,
             non_interactive: None,
+            verbose: false,
         };
 
         let config_without_meta = RuntimeConfig {
@@ -518,6 +520,7 @@ mod tests {
             meta_file_path: None,
             experimental: false,
             non_interactive: None,
+            verbose: false,
         };
 
         assert!(config_with_meta.has_meta_file());
@@ -536,6 +539,7 @@ mod tests {
             meta_file_path: Some(meta_file.clone()),
             experimental: false,
             non_interactive: None,
+            verbose: false,
         };
 
         assert_eq!(config.meta_root(), Some(temp_dir.path().join("subdir")));

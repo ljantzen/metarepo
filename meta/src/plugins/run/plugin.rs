@@ -1,7 +1,6 @@
 use super::{list_scripts, run_script};
 use anyhow::Result;
 use clap::ArgMatches;
-use colored::Colorize;
 use metarepo_core::{
     arg, command, is_interactive, plugin, prompt_select, BasePlugin, MetaPlugin,
     NonInteractiveMode, RuntimeConfig,
@@ -130,7 +129,7 @@ fn handle_run_script(matches: &ArgMatches, config: &RuntimeConfig) -> Result<()>
 
                 let script_names: Vec<String> = all_scripts.keys().cloned().collect();
 
-                println!("\n  🚀 {}", "Run a script".cyan().bold());
+                println!("\n  Run a script");
                 prompt_select("Script", script_names, None, non_interactive)?
             } else {
                 return Err(anyhow::anyhow!(
@@ -197,6 +196,7 @@ fn handle_run_script(matches: &ArgMatches, config: &RuntimeConfig) -> Result<()>
         no_progress,
         streaming,
         &env_vars,
+        config.verbose,
     )?;
     Ok(())
 }

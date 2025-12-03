@@ -1,7 +1,6 @@
 use crate::plugins::exec::ProjectIterator;
 use crate::plugins::shared::{OutputManager, ProgressIndicator};
 use anyhow::{Context, Result};
-use colored::*;
 use metarepo_core::{MetaConfig, ProjectEntry};
 use std::collections::HashMap;
 use std::path::Path;
@@ -25,6 +24,7 @@ pub fn run_script(
     no_progress: bool,
     streaming: bool,
     env_vars: &HashMap<String, String>,
+    verbose: bool,
 ) -> Result<()> {
     let meta_file_path = base_path.join(".meta");
     if !meta_file_path.exists() {
@@ -54,7 +54,7 @@ pub fn run_script(
             if let Some(project_name) = resolve_project_identifier(&config, project_id) {
                 selected.push(project_name);
             } else {
-                eprintln!("  {} Project '{}' not found", "⚠️".yellow(), project_id);
+                eprintln!("  WARNING: Project '{}' not found", project_id);
             }
         }
         selected
@@ -82,23 +82,17 @@ pub fn run_script(
 
     if selected_projects.is_empty() {
         println!(
-            "  {} No projects selected or script not found",
-            "ℹ".bright_black()
+            "  INFO: No projects selected or script not found"
         );
         return Ok(());
     }
 
     println!(
-        "\n  {} {}",
-        "🚀".cyan(),
-        format!(
-            "Running '{}' in {} project(s)",
-            script_name,
-            selected_projects.len()
-        )
-        .bold()
+        "\n  Running '{}' in {} project(s)",
+        script_name,
+        selected_projects.len()
     );
-    println!("  {}", "═".repeat(60).bright_black());
+    println!("  {}", "═".repeat(60));
 
     let mut success_count = 0;
     let mut failed = Vec::new();
@@ -110,14 +104,9 @@ pub fn run_script(
             ProgressIndicator::new(Arc::clone(&output_manager), script_name.to_string());
 
         println!(
-            "\n  {} {} [parallel mode]",
-            "🚀".cyan(),
-            format!(
-                "Running '{}' in {} project(s)",
-                script_name,
-                selected_projects.len()
-            )
-            .bold()
+            "\n  Running '{}' in {} project(s) [parallel mode]",
+            script_name,
+            selected_projects.len()
         );
 
         if !no_progress {
@@ -191,31 +180,30 @@ pub fn run_script(
             // Clear any partial output and show completion without progress
             print!("\r\x1b[K");
         }
-        output_manager.display_final_results();
+        output_manager.display_final_results(verbose);
 
         return Ok(());
     } else {
         for project_name in &selected_projects {
-            match execute_script_in_project(script_name, project_name, base_path, &config, env_vars)
+            match execute_script_in_project(script_name, project_name, base_path, &config, env_vars, verbose)
             {
                 Ok(_) => success_count += 1,
                 Err(e) => {
-                    eprintln!("     {} {}", "❌".red(), format!("Failed: {}", e).red());
+                    eprintln!("     ERROR: Failed: {}", e);
                     failed.push(project_name.clone());
                 }
             }
         }
     }
 
-    println!("\n  {}", "─".repeat(60).bright_black());
+    println!("\n  {}", "─".repeat(60));
     println!(
-        "  {} {} scripts completed, {} failed",
-        "Summary:".bright_black(),
-        success_count.to_string().green(),
+        "  Summary: {} scripts completed, {} failed",
+        success_count,
         if !failed.is_empty() {
-            failed.len().to_string().red()
+            failed.len()
         } else {
-            "0".bright_black()
+            0
         }
     );
 
@@ -229,6 +217,7 @@ fn execute_script_in_project(
     base_path: &Path,
     config: &MetaConfig,
     env_vars: &HashMap<String, String>,
+    verbose: bool,
 ) -> Result<()> {
     let project_path = base_path.join(project_name);
 
@@ -239,7 +228,7 @@ fn execute_script_in_project(
         ));
     }
 
-    println!("\n  {} {}", "📦".blue(), project_name.bold());
+    println!("\n  {}", project_name);
 
     // Get the script command
     let scripts = config.get_all_scripts(Some(project_name));
@@ -251,7 +240,7 @@ fn execute_script_in_project(
         )
     })?;
 
-    println!("     {} {}", "►".bright_black(), script_cmd.bright_white());
+    println!("     > {}", script_cmd);
 
     // Parse the command (simple split by spaces - could be improved)
     let parts: Vec<&str> = script_cmd.split_whitespace().collect();
@@ -286,7 +275,9 @@ fn execute_script_in_project(
         if !output.stdout.is_empty() {
             print!("{}", String::from_utf8_lossy(&output.stdout));
         }
-        println!("     {} {}", "✅".green(), "Completed successfully".green());
+        if verbose {
+            println!("     OK: Completed successfully");
+        }
     } else {
         if !output.stderr.is_empty() {
             eprint!("{}", String::from_utf8_lossy(&output.stderr));
@@ -436,19 +427,18 @@ pub fn list_scripts(base_path: &Path, project: Option<&str>) -> Result<()> {
 
     let config = MetaConfig::load_from_file(&meta_file_path)?;
 
-    println!("\n  {} {}", "📜".cyan(), "Available Scripts".bold());
-    println!("  {}", "═".repeat(60).bright_black());
+    println!("\n  Available Scripts");
+    println!("  {}", "═".repeat(60));
 
     // Show global scripts
     if let Some(global_scripts) = &config.scripts {
         if !global_scripts.is_empty() {
-            println!("\n  {} {}", "🌍".blue(), "Global Scripts".bold());
+            println!("\n  Global Scripts");
             for (name, cmd) in global_scripts {
                 println!(
-                    "     {} {} {}",
-                    name.bright_white(),
-                    "→".bright_black(),
-                    cmd.bright_black()
+                    "     {} -> {}",
+                    name,
+                    cmd
                 );
             }
         }
@@ -458,17 +448,14 @@ pub fn list_scripts(base_path: &Path, project: Option<&str>) -> Result<()> {
     if let Some(project_name) = project {
         if let Some(project_scripts) = config.get_project_scripts(project_name) {
             println!(
-                "\n  {} {} {}",
-                "📦".blue(),
-                "Project Scripts".bold(),
-                format!("({})", project_name).bright_black()
+                "\n  Project Scripts ({})",
+                project_name
             );
             for (name, cmd) in project_scripts {
                 println!(
-                    "     {} {} {}",
-                    name.bright_white(),
-                    "→".bright_black(),
-                    cmd.bright_black()
+                    "     {} -> {}",
+                    name,
+                    cmd
                 );
             }
         }
@@ -478,17 +465,14 @@ pub fn list_scripts(base_path: &Path, project: Option<&str>) -> Result<()> {
             if let ProjectEntry::Metadata(metadata) = entry {
                 if !metadata.scripts.is_empty() {
                     println!(
-                        "\n  {} {} {}",
-                        "📦".blue(),
-                        project_name.bold(),
-                        "(project)".bright_black()
+                        "\n  {} (project)",
+                        project_name
                     );
                     for (name, cmd) in &metadata.scripts {
                         println!(
-                            "     {} {} {}",
-                            name.bright_white(),
-                            "→".bright_black(),
-                            cmd.bright_black()
+                            "     {} -> {}",
+                            name,
+                            cmd
                         );
                     }
                 }

@@ -127,7 +127,9 @@ impl ConfigPlugin {
 
         updated_config.save_to_file(&meta_file)?;
 
-        println!("✓ Config updated: {} = {}", key, value_str);
+        if config.verbose {
+            println!("OK: Config updated: {} = {}", key, value_str);
+        }
 
         Ok(())
     }
@@ -145,11 +147,13 @@ impl ConfigPlugin {
         // Try to load the config
         match MetaConfig::load_from_file(&meta_file) {
             Ok(_) => {
-                println!("✓ Config file is valid: {}", meta_file.display());
+                if config.verbose {
+                    println!("OK: Config file is valid: {}", meta_file.display());
+                }
                 Ok(())
             }
             Err(e) => {
-                println!("✗ Config file validation failed: {}", e);
+                println!("ERROR: Config file validation failed: {}", e);
                 Err(e)
             }
         }

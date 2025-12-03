@@ -1,4 +1,3 @@
-use colored::*;
 use std::collections::HashMap;
 use std::io::{self, Write};
 use std::sync::{Arc, Mutex};
@@ -128,14 +127,14 @@ impl OutputManager {
             .all(|o| matches!(o.status, JobStatus::Completed | JobStatus::Failed))
     }
 
-    pub fn display_final_results(&self) {
+    pub fn display_final_results(&self, verbose: bool) {
         let outputs = self.outputs.lock().unwrap();
         let total_duration = self.start_time.elapsed();
 
         // Clear progress line and print completion message
         print!("\r\x1b[K");
         println!(
-            "✓ All projects completed in {:.1}s\n",
+            "All projects completed in {:.1}s\n",
             total_duration.as_secs_f32()
         );
 
@@ -145,7 +144,7 @@ impl OutputManager {
         // Display results in original order
         for project_name in &self.project_order {
             if let Some(output) = outputs.get(project_name) {
-                self.display_project_result(output);
+                self.display_project_result(output, verbose);
 
                 match output.status {
                     JobStatus::Completed => success_count += 1,
@@ -156,24 +155,23 @@ impl OutputManager {
         }
 
         // Summary
-        println!("\n  {}", "─".repeat(60).bright_black());
+        println!("\n  {}", "─".repeat(60));
         println!(
-            "  {} {} completed, {} failed",
-            "Summary:".bright_black(),
-            success_count.to_string().green(),
+            "  Summary: {} completed, {} failed",
+            success_count,
             if !failed_projects.is_empty() {
-                failed_projects.len().to_string().red()
+                failed_projects.len()
             } else {
-                "0".bright_black()
+                0
             }
         );
 
         if !failed_projects.is_empty() {
-            println!("  {} {}", "Failed:".red(), failed_projects.join(", ").red());
+            println!("  Failed: {}", failed_projects.join(", "));
         }
     }
 
-    fn display_project_result(&self, output: &ProjectOutput) {
+    fn display_project_result(&self, output: &ProjectOutput, verbose: bool) {
         let duration_str = if let Some(duration) = output.duration {
             format!("({:.1}s)", duration.as_secs_f32())
         } else {
@@ -181,15 +179,14 @@ impl OutputManager {
         };
 
         println!(
-            "  {} {} {}",
-            "📦".blue(),
-            output.name.bold(),
-            duration_str.bright_black()
+            "  {} {}",
+            output.name,
+            duration_str
         );
 
         // Display command if available
         if let Some(command) = &output.command {
-            println!("     {} {}", "►".bright_black(), command.bright_white());
+            println!("     > {}", command);
         }
 
         // Display stdout if present
@@ -205,23 +202,25 @@ impl OutputManager {
         // Display result
         match output.status {
             JobStatus::Completed => {
-                println!("     {} {}", "✅".green(), "Completed successfully".green());
+                if verbose {
+                    println!("     OK: Completed successfully");
+                }
             }
             JobStatus::Failed => {
-                println!("     {} {}", "❌".red(), "Failed".red());
+                println!("     ERROR: Failed");
 
                 // Display stderr if present
                 if !output.stderr.is_empty() {
                     let stderr_str = String::from_utf8_lossy(&output.stderr);
                     for line in stderr_str.lines() {
                         if !line.trim().is_empty() {
-                            println!("     {} {}", "⚠".yellow(), line.red());
+                            println!("     WARNING: {}", line);
                         }
                     }
                 }
             }
             _ => {
-                println!("     {} {}", "⏸".yellow(), "Unknown status".yellow());
+                println!("     WARNING: Unknown status");
             }
         }
 
@@ -262,16 +261,16 @@ impl ProgressIndicator {
                 let spinner = spinner_chars[spinner_index % spinner_chars.len()];
                 let progress_text = if running > 0 {
                     format!(
-                        "🚀 Running '{}' {} {}/{} projects • {}s elapsed",
+                        "Running '{}' {} {}/{} projects • {}s elapsed",
                         task_name,
-                        spinner.to_string().cyan(),
+                        spinner,
                         completed,
                         total,
                         elapsed
                     )
                 } else {
                     format!(
-                        "🚀 Completed '{}' • {}/{} projects • {}s elapsed",
+                        "Completed '{}' • {}/{} projects • {}s elapsed",
                         task_name, completed, total, elapsed
                     )
                 };

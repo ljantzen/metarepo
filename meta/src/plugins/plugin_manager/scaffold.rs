@@ -26,12 +26,12 @@ impl PluginScaffold {
         // Create plugin manifest
         let manifest_path = plugin_dir.join("plugin.toml");
         PluginManifest::write_example(&manifest_path)?;
-        println!("✓ Created plugin manifest at: {}", manifest_path.display());
+        println!("OK: Created plugin manifest at: {}", manifest_path.display());
         
         // Create README
         Self::create_readme(name, &plugin_dir)?;
         
-        println!("✓ Plugin '{}' scaffolded successfully at: {}", name, plugin_dir.display());
+        println!("OK: Plugin '{}' scaffolded successfully at: {}", name, plugin_dir.display());
         println!("\nNext steps:");
         println!("  1. Edit plugin.toml to define your plugin's commands");
         println!("  2. Implement your plugin logic in the src directory");

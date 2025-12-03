@@ -1,12 +1,11 @@
 use anyhow::{Context, Result};
-use colored::*;
 use metarepo_core::{MetaConfig, ProjectEntry, ProjectMetadata};
 use std::collections::HashMap;
 use std::path::Path;
 use std::process::Command;
 
 /// Convert a normal repository to a bare repository with worktrees
-pub fn convert_to_bare(project_name: &str, base_path: &Path) -> Result<()> {
+pub fn convert_to_bare(project_name: &str, base_path: &Path, verbose: bool) -> Result<()> {
     // Load configuration
     let meta_file_path = base_path.join(".meta");
     if !meta_file_path.exists() {
@@ -38,9 +37,7 @@ pub fn convert_to_bare(project_name: &str, base_path: &Path) -> Result<()> {
     // Check if it's already a bare repository
     if config.is_bare_repo(project_name) {
         println!(
-            "\n  {} {}",
-            "ℹ".cyan(),
-            "Project is already configured as a bare repository".cyan()
+            "\n  INFO: Project is already configured as a bare repository"
         );
         return Ok(());
     }
@@ -54,31 +51,23 @@ pub fn convert_to_bare(project_name: &str, base_path: &Path) -> Result<()> {
     }
 
     println!(
-        "\n  {} {}",
-        "⚠️".yellow(),
-        "Converting to Bare Repository".bold().yellow()
+        "\n  WARNING: Converting to Bare Repository"
     );
-    println!("  {}", "═".repeat(60).bright_black());
-    println!("\n  {} This operation will:", "ℹ".cyan());
+    println!("  {}", "═".repeat(60));
+    println!("\n  INFO: This operation will:");
     println!(
-        "     {} Convert {} to a bare repository",
-        "•".bright_black(),
-        project_name.bright_white()
+        "     • Convert {} to a bare repository",
+        project_name
     );
     println!(
-        "     {} Create a worktree for the current branch",
-        "•".bright_black()
+        "     • Create a worktree for the current branch"
     );
-    println!("     {} Update the .meta configuration", "•".bright_black());
+    println!("     • Update the .meta configuration");
     println!(
-        "\n  {} {}",
-        "⚠️".yellow(),
-        "Warning: This operation modifies your repository structure!".yellow()
+        "\n  WARNING: This operation modifies your repository structure!"
     );
     println!(
-        "  {} {}",
-        "".bright_black(),
-        "Make sure you have committed all changes before proceeding.".bright_black()
+        "  Make sure you have committed all changes before proceeding."
     );
 
     // Check for uncommitted changes
@@ -92,14 +81,10 @@ pub fn convert_to_bare(project_name: &str, base_path: &Path) -> Result<()> {
 
     if !status_output.stdout.is_empty() {
         println!(
-            "\n  {} {}",
-            "❌".red(),
-            "Uncommitted changes detected!".red()
+            "\n  ERROR: Uncommitted changes detected!"
         );
         println!(
-            "     {} {}",
-            "└".bright_black(),
-            "Commit or stash your changes first".bright_black()
+            "     └ Commit or stash your changes first"
         );
         return Err(anyhow::anyhow!(
             "Cannot convert repository with uncommitted changes"
@@ -125,16 +110,14 @@ pub fn convert_to_bare(project_name: &str, base_path: &Path) -> Result<()> {
     }
 
     println!(
-        "\n  {} Current branch: {}",
-        "📍".cyan(),
-        current_branch.bright_white()
+        "\n  Current branch: {}",
+        current_branch
     );
 
     // Prompt for confirmation
     use std::io::{self, Write};
     print!(
-        "\n  {} Continue with conversion? [y/N]: ",
-        "→".bright_black()
+        "\n  Continue with conversion? [y/N]: "
     );
     io::stdout().flush()?;
 
@@ -144,24 +127,24 @@ pub fn convert_to_bare(project_name: &str, base_path: &Path) -> Result<()> {
 
     if response != "y" && response != "yes" {
         println!(
-            "\n  {} {}",
-            "ℹ".bright_black(),
-            "Conversion cancelled".bright_black()
+            "\n  INFO: Conversion cancelled"
         );
         return Ok(());
     }
 
-    println!("\n  {} {}", "🔄".blue(), "Starting conversion...".bold());
+    println!("\n  Starting conversion...");
 
     // Step 1: Move .git to .git.tmp
-    println!("\n  {} Backing up .git directory...", "1️⃣".blue());
+    println!("\n  [1/5] Backing up .git directory...");
     let git_backup = project_path.join(".git.tmp");
     std::fs::rename(project_path.join(".git"), &git_backup)
         .context("Failed to backup .git directory")?;
-    println!("     {} {}", "✅".green(), "Backed up to .git.tmp".green());
+    if verbose {
+        println!("     OK: Backed up to .git.tmp");
+    }
 
     // Step 2: Clone as bare repository
-    println!("\n  {} Creating bare repository...", "2️⃣".blue());
+    println!("\n  [2/5] Creating bare repository...");
     let bare_path = project_path.join(".git");
 
     // Clone from the backup
@@ -175,19 +158,15 @@ pub fn convert_to_bare(project_name: &str, base_path: &Path) -> Result<()> {
     match clone_output {
         Ok(output) if output.status.success() => {
             println!(
-                "     {} {}",
-                "✅".green(),
-                "Created bare repository".green()
+                "     OK: Created bare repository"
             );
         }
         _ => {
             // Restore on failure
             println!(
-                "     {} {}",
-                "❌".red(),
-                "Failed to create bare repository".red()
+                "     ERROR: Failed to create bare repository"
             );
-            println!("     {} Restoring original .git...", "🔄".yellow());
+            println!("     Restoring original .git...");
             if git_backup.exists() {
                 std::fs::rename(&git_backup, project_path.join(".git")).ok();
             }
@@ -197,9 +176,8 @@ pub fn convert_to_bare(project_name: &str, base_path: &Path) -> Result<()> {
 
     // Step 3: Create worktree for current branch
     println!(
-        "\n  {} Creating worktree for '{}'...",
-        "3️⃣".blue(),
-        current_branch.bright_white()
+        "\n  [3/5] Creating worktree for '{}'...",
+        current_branch
     );
     let worktree_path = project_path.join(&current_branch);
 
@@ -216,13 +194,12 @@ pub fn convert_to_bare(project_name: &str, base_path: &Path) -> Result<()> {
     if !worktree_output.status.success() {
         let stderr = String::from_utf8_lossy(&worktree_output.stderr);
         println!(
-            "     {} {}",
-            "❌".red(),
-            format!("Failed: {}", stderr.trim()).red()
+            "     ERROR: Failed: {}",
+            stderr.trim()
         );
 
         // Cleanup on failure
-        println!("     {} Cleaning up...", "🔄".yellow());
+        println!("     Cleaning up...");
         std::fs::remove_dir_all(&bare_path).ok();
         if git_backup.exists() {
             std::fs::rename(&git_backup, project_path.join(".git")).ok();
@@ -232,18 +209,19 @@ pub fn convert_to_bare(project_name: &str, base_path: &Path) -> Result<()> {
     }
 
     println!(
-        "     {} {}",
-        "✅".green(),
-        format!("Created at {}", worktree_path.display()).green()
+        "     OK: Created at {}",
+        worktree_path.display()
     );
 
     // Step 4: Remove backup
-    println!("\n  {} Removing backup...", "4️⃣".blue());
+    println!("\n  [4/5] Removing backup...");
     std::fs::remove_dir_all(&git_backup).context("Failed to remove backup")?;
-    println!("     {} {}", "✅".green(), "Backup removed".green());
+    if verbose {
+        println!("     OK: Backup removed");
+    }
 
     // Step 5: Update .meta configuration
-    println!("\n  {} Updating .meta configuration...", "5️⃣".blue());
+    println!("\n  [5/5] Updating .meta configuration...");
 
     // Get project URL
     let project_url = config
@@ -264,29 +242,26 @@ pub fn convert_to_bare(project_name: &str, base_path: &Path) -> Result<()> {
     );
 
     config.save_to_file(&meta_file_path)?;
-    println!("     {} {}", "✅".green(), "Configuration updated".green());
+    if verbose {
+        println!("     OK: Configuration updated");
+    }
 
-    println!("\n  {}", "─".repeat(60).bright_black());
+    println!("\n  {}", "─".repeat(60));
     println!(
-        "  {} {}",
-        "✅".green(),
-        "Conversion complete!".bold().green()
+        "  Conversion complete!"
     );
-    println!("\n  {} Next steps:", "ℹ".cyan());
+    println!("\n  Next steps:");
     println!(
-        "     {} Your current branch is now at: {}",
-        "•".bright_black(),
-        worktree_path.display().to_string().bright_white()
+        "     • Your current branch is now at: {}",
+        worktree_path.display()
     );
     println!(
-        "     {} Create new worktrees with: {}",
-        "•".bright_black(),
-        format!("meta worktree add <branch> --project {}", project_name).bright_cyan()
+        "     • Create new worktrees with: meta worktree add <branch> --project {}",
+        project_name
     );
     println!(
-        "     {} New worktrees will be created at: {}/",
-        "•".bright_black(),
-        project_path.display().to_string().bright_white()
+        "     • New worktrees will be created at: {}/",
+        project_path.display()
     );
     println!();
 

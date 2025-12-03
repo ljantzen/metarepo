@@ -4,7 +4,6 @@ use super::engine::RuleEngine;
 use super::project::{ProjectRulesManager, RulesStats};
 use anyhow::Result;
 use clap::ArgMatches;
-use colored::*;
 use metarepo_core::{arg, command, plugin, BasePlugin, MetaPlugin, RuntimeConfig};
 use std::collections::HashMap;
 
@@ -230,7 +229,7 @@ fn handle_check(matches: &ArgMatches, config: &RuntimeConfig) -> Result<()> {
         let project_path = manager.get_project_path(&project_name)?;
 
         if !project_path.exists() {
-            println!("{}: {}", project_name.yellow(), "Directory not found".red());
+            println!("{}: Directory not found", project_name);
             continue;
         }
 
@@ -238,7 +237,7 @@ fn handle_check(matches: &ArgMatches, config: &RuntimeConfig) -> Result<()> {
         let rules_config = manager.load_project_rules(&project_name)?;
         let engine = RuleEngine::new(rules_config.clone());
 
-        println!("\n{} {}", "Checking project:".bold(), project_name.cyan());
+        println!("\nChecking project: {}", project_name);
         println!("{}", "=".repeat(50));
 
         // Show rules source
@@ -252,39 +251,43 @@ fn handle_check(matches: &ArgMatches, config: &RuntimeConfig) -> Result<()> {
         let violations = engine.validate(&project_path)?;
 
         if violations.is_empty() {
-            println!("✅ {}", "All rules passed!".green());
+            if config.verbose {
+                println!("OK: All rules passed!");
+            }
         } else {
             total_violations += violations.len();
 
             for violation in &violations {
                 match violation.severity {
                     super::engine::Severity::Error => {
-                        println!("❌ {} {}", "ERROR:".red().bold(), violation.message);
+                        println!("ERROR: {}", violation.message);
                     }
                     super::engine::Severity::Warning => {
-                        println!("⚠️  {} {}", "WARNING:".yellow().bold(), violation.message);
+                        println!("WARNING: {}", violation.message);
                     }
                     super::engine::Severity::Info => {
-                        println!("ℹ️  {} {}", "INFO:".blue().bold(), violation.message);
+                        println!("INFO: {}", violation.message);
                     }
                 }
 
                 if let Some(path) = &violation.path {
-                    println!("   {}: {}", "Path".dimmed(), path.display());
+                    println!("   Path: {}", path.display());
                 }
 
                 if violation.fixable {
-                    println!("   {} This can be auto-fixed", "→".green());
+                    println!("   -> This can be auto-fixed");
                 }
             }
 
             if fix {
-                println!("\n{}", "Attempting to fix violations...".yellow());
+                println!("\nAttempting to fix violations...");
                 let fixable: Vec<_> = violations.iter().filter(|v| v.fixable).cloned().collect();
 
                 if !fixable.is_empty() {
                     super::engine::fix_violations(&project_path, &fixable)?;
-                    println!("✅ Fixed {} violations", fixable.len());
+                    if config.verbose {
+                        println!("OK: Fixed {} violations", fixable.len());
+                    }
                 }
             }
         }
@@ -292,12 +295,11 @@ fn handle_check(matches: &ArgMatches, config: &RuntimeConfig) -> Result<()> {
 
     if total_violations > 0 {
         println!(
-            "\n{} Found {} total violations",
-            "Summary:".bold(),
+            "\nSummary: Found {} total violations",
             total_violations
         );
         if !fix {
-            println!("💡 Run with --fix to automatically fix fixable violations");
+            println!("TIP: Run with --fix to automatically fix fixable violations");
         }
     }
 
@@ -321,8 +323,7 @@ fn handle_init(matches: &ArgMatches, config: &RuntimeConfig) -> Result<()> {
 
     if full_path.exists() {
         println!(
-            "{} Rules configuration already exists at: {}",
-            "Warning:".yellow(),
+            "Warning: Rules configuration already exists at: {}",
             full_path.display()
         );
         return Ok(());
@@ -332,14 +333,16 @@ fn handle_init(matches: &ArgMatches, config: &RuntimeConfig) -> Result<()> {
     let yaml = serde_yaml::to_string(&default_config)?;
     std::fs::write(&full_path, &yaml)?;
 
-    println!("✅ Created rules configuration at: {}", full_path.display());
+    if config.verbose {
+        println!("OK: Created rules configuration at: {}", full_path.display());
+    }
     if project.is_some() {
         println!(
-            "📝 Project {} now has specific rules",
-            project.unwrap().cyan()
+            "Project {} now has specific rules",
+            project.unwrap()
         );
     }
-    println!("\n{}", "Example configuration:".bold());
+    println!("\nExample configuration:");
     println!("{}", yaml);
 
     Ok(())
@@ -356,31 +359,31 @@ fn handle_list(matches: &ArgMatches, config: &RuntimeConfig) -> Result<()> {
         load_rules_config(config)?
     };
 
-    println!("{}", "Configured Rules:".bold().underline());
+    println!("Configured Rules:");
     println!();
 
     if !rules_config.directories.is_empty() {
-        println!("{}", "📁 Directory Rules:".cyan().bold());
+        println!("Directory Rules:");
         for dir_rule in &rules_config.directories {
             let required = if dir_rule.required {
                 "required"
             } else {
                 "optional"
             };
-            println!("   • {} ({})", dir_rule.path, required.dimmed());
+            println!("   • {} ({})", dir_rule.path, required);
             if let Some(desc) = &dir_rule.description {
-                println!("     {}", desc.dimmed());
+                println!("     {}", desc);
             }
         }
         println!();
     }
 
     if !rules_config.components.is_empty() {
-        println!("{}", "🧩 Component Rules:".cyan().bold());
+        println!("Component Rules:");
         for comp_rule in &rules_config.components {
-            println!("   • Pattern: {}", comp_rule.pattern.yellow());
+            println!("   • Pattern: {}", comp_rule.pattern);
             if let Some(desc) = &comp_rule.description {
-                println!("     {}", desc.dimmed());
+                println!("     {}", desc);
             }
             println!("     Structure:");
             for item in &comp_rule.structure {
@@ -391,11 +394,11 @@ fn handle_list(matches: &ArgMatches, config: &RuntimeConfig) -> Result<()> {
     }
 
     if !rules_config.files.is_empty() {
-        println!("{}", "📄 File Rules:".cyan().bold());
+        println!("File Rules:");
         for file_rule in &rules_config.files {
-            println!("   • Pattern: {}", file_rule.pattern.yellow());
+            println!("   • Pattern: {}", file_rule.pattern);
             if let Some(desc) = &file_rule.description {
-                println!("     {}", desc.dimmed());
+                println!("     {}", desc);
             }
             if !file_rule.requires.is_empty() {
                 println!("     Requires:");
@@ -423,7 +426,7 @@ fn handle_docs(matches: &ArgMatches, _config: &RuntimeConfig) -> Result<()> {
             "size" => super::docs::print_size_rule_docs(),
             "security" | "sec" => super::docs::print_security_rule_docs(),
             _ => {
-                println!("{} Unknown rule type: {}", "Error:".red(), rule_type);
+                println!("Error: Unknown rule type: {}", rule_type);
                 println!("Valid types: directory, component, file, naming, dependency, import, documentation, size, security");
             }
         }

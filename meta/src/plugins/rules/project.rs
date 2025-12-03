@@ -1,6 +1,5 @@
 use super::config::RulesConfig;
 use anyhow::Result;
-use colored::*;
 use metarepo_core::RuntimeConfig;
 use std::path::{Path, PathBuf};
 
@@ -18,15 +17,15 @@ impl<'a> ProjectRulesManager<'a> {
         // Try project-specific rules first
         if let Ok(project_rules) = self.load_project_specific_rules(project_name) {
             println!(
-                "📋 Using project-specific rules for {}",
-                project_name.cyan()
+                "Using project-specific rules for {}",
+                project_name
             );
             return Ok(project_rules);
         }
 
         // Try rules from .meta file
         if let Ok(meta_rules) = self.load_meta_project_rules(project_name) {
-            println!("📋 Using rules from .meta for {}", project_name.cyan());
+            println!("Using rules from .meta for {}", project_name);
             return Ok(meta_rules);
         }
 
@@ -63,10 +62,10 @@ impl<'a> ProjectRulesManager<'a> {
         };
 
         if rules_path.exists() {
-            println!("📋 Using workspace rules");
+            println!("Using workspace rules");
             super::config::load_config(rules_path)
         } else {
-            println!("📋 Using default minimal rules");
+            println!("Using default minimal rules");
             Ok(RulesConfig::minimal())
         }
     }
@@ -95,8 +94,8 @@ impl<'a> ProjectRulesManager<'a> {
 
     /// List all projects and their rules status
     pub fn list_project_rules_status(&self) -> Result<()> {
-        println!("{}", "PROJECT RULES STATUS".cyan().bold());
-        println!("{}", "════════════════════".blue());
+        println!("PROJECT RULES STATUS");
+        println!("════════════════════");
         println!();
 
         for project_name in self.runtime_config.meta_config.projects.keys() {
@@ -105,15 +104,13 @@ impl<'a> ProjectRulesManager<'a> {
 
             if has_specific_rules {
                 println!(
-                    "✅ {} - {}",
-                    project_name.green(),
-                    "Has project-specific rules".dimmed()
+                    "OK: {} - Has project-specific rules",
+                    project_name
                 );
             } else {
                 println!(
-                    "   {} - {}",
-                    project_name.yellow(),
-                    "Using workspace rules".dimmed()
+                    "   {} - Using workspace rules",
+                    project_name
                 );
             }
         }
@@ -129,8 +126,7 @@ impl<'a> ProjectRulesManager<'a> {
 
         if project_rules_path.exists() {
             println!(
-                "{} Project {} already has specific rules",
-                "Warning:".yellow(),
+                "Warning: Project {} already has specific rules",
                 project_name
             );
             return Ok(());
@@ -139,8 +135,8 @@ impl<'a> ProjectRulesManager<'a> {
         super::config::save_config(&project_rules_path, &workspace_rules)?;
 
         println!(
-            "✅ Copied workspace rules to project {}",
-            project_name.green()
+            "OK: Copied workspace rules to project {}",
+            project_name
         );
         println!("   Edit {} to customize", project_rules_path.display());
 
@@ -196,8 +192,8 @@ impl RulesStats {
     }
 
     pub fn print(&self) {
-        println!("📊 Rules Statistics:");
-        println!("   Source: {}", self.source.cyan());
+        println!("Rules Statistics:");
+        println!("   Source: {}", self.source);
         println!("   Directory rules: {}", self.total_directories);
         println!("   Component rules: {}", self.total_components);
         println!("   File rules: {}", self.total_files);

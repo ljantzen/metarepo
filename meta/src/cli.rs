@@ -121,8 +121,11 @@ impl MetarepoCli {
             .get_one::<String>("non-interactive")
             .and_then(|s| NonInteractiveMode::from_str(s).ok());
 
+        // Extract verbose flag (check both top-level and subcommand level)
+        let verbose = matches.get_flag("verbose");
+
         // Load runtime configuration
-        let config = create_runtime_config_with_flags(false, non_interactive)?;
+        let mut config = create_runtime_config_with_flags(false, non_interactive, verbose)?;
 
         // Route to appropriate plugin
         match matches.subcommand() {
@@ -133,6 +136,11 @@ impl MetarepoCli {
                     self.registry
                         .borrow_mut()
                         .load_external_plugins(&meta_config);
+                }
+
+                // Check for verbose flag in subcommand matches too
+                if sub_matches.get_flag("verbose") {
+                    config.verbose = true;
                 }
 
                 self.registry
@@ -159,8 +167,11 @@ impl MetarepoCli {
             .get_one::<String>("non-interactive")
             .and_then(|s| NonInteractiveMode::from_str(s).ok());
 
+        // Extract verbose flag (check both top-level and subcommand level)
+        let verbose = matches.get_flag("verbose");
+
         // Load runtime configuration with experimental flag
-        let config = create_runtime_config_with_flags(true, non_interactive)?;
+        let mut config = create_runtime_config_with_flags(true, non_interactive, verbose)?;
 
         tracing::debug!("Experimental features enabled");
 
@@ -172,6 +183,11 @@ impl MetarepoCli {
                     self.registry
                         .borrow_mut()
                         .load_external_plugins(&meta_config);
+                }
+
+                // Check for verbose flag in subcommand matches too
+                if sub_matches.get_flag("verbose") {
+                    config.verbose = true;
                 }
 
                 self.registry

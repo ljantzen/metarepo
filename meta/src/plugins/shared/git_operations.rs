@@ -1,5 +1,4 @@
 use anyhow::{Context, Result};
-use colored::*;
 use git2::{Cred, FetchOptions, RemoteCallbacks, Repository};
 use std::path::Path;
 use std::process::Command;
@@ -120,9 +119,8 @@ pub fn create_default_worktree(bare_repo_path: &Path, project_path: &Path) -> Re
     }
 
     println!(
-        "     {} {}",
-        "✅".green(),
-        format!("Created default worktree: {}", worktree_path.display()).green()
+        "     OK: Created default worktree: {}",
+        worktree_path.display()
     );
 
     Ok(())

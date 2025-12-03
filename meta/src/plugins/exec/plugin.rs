@@ -139,6 +139,7 @@ fn handle_exec(matches: &ArgMatches, runtime_config: &RuntimeConfig) -> Result<(
                     parallel,
                     no_progress,
                     streaming,
+                    runtime_config.verbose,
                 )?;
                 return Ok(());
             }
@@ -224,6 +225,7 @@ fn handle_exec(matches: &ArgMatches, runtime_config: &RuntimeConfig) -> Result<(
                 parallel,
                 no_progress,
                 streaming,
+                runtime_config.verbose,
             )?;
 
             Ok(())

@@ -61,6 +61,7 @@ pub struct RuntimeConfigDto {
     pub working_dir: PathBuf,
     pub meta_file_path: Option<PathBuf>,
     pub experimental: bool,
+    pub verbose: bool,
 }
 
 impl From<&RuntimeConfig> for RuntimeConfigDto {
@@ -70,6 +71,7 @@ impl From<&RuntimeConfig> for RuntimeConfigDto {
             working_dir: config.working_dir.clone(),
             meta_file_path: config.meta_file_path.clone(),
             experimental: config.experimental,
+            verbose: config.verbose,
         }
     }
 }
@@ -418,6 +420,7 @@ mod tests {
             meta_file_path: None,
             experimental: false,
             non_interactive: None,
+            verbose: false,
         };
 
         let dto: RuntimeConfigDto = (&config).into();

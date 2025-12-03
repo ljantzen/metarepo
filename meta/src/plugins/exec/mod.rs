@@ -66,6 +66,7 @@ pub fn execute_with_iterator(
     parallel: bool,
     no_progress: bool,
     streaming: bool,
+    verbose: bool,
 ) -> Result<()> {
     let projects: Vec<_> = iterator.collect();
 
@@ -173,7 +174,7 @@ pub fn execute_with_iterator(
             // Clear any partial output and show completion without progress
             print!("\r\x1b[K");
         }
-        output_manager.display_final_results();
+        output_manager.display_final_results(verbose);
 
         return Ok(());
     } else {
@@ -181,14 +182,16 @@ pub fn execute_with_iterator(
             println!("[{}/{}] {}", idx + 1, projects.len(), project.name);
 
             if !project.exists {
-                println!("  ⚠️  Directory does not exist, skipping");
+                println!("  WARNING: Directory does not exist, skipping");
                 continue;
             }
 
             if let Err(e) = execute_command_in_directory(command, args, &project.path) {
-                eprintln!("  ❌ Failed: {}", e);
+                eprintln!("  ERROR: Failed: {}", e);
             } else {
-                println!("  ✅ Success");
+                if verbose {
+                    println!("  OK: Success");
+                }
             }
         }
     }
@@ -231,7 +234,7 @@ pub fn execute_in_all_projects(command: &str, args: &[&str]) -> Result<()> {
     let base_path = meta_file.parent().unwrap();
 
     let iterator = ProjectIterator::new(&config, base_path);
-    execute_with_iterator(command, args, iterator, true, false, false, false)
+    execute_with_iterator(command, args, iterator, true, false, false, false, false)
 }
 
 pub fn execute_in_specific_projects(command: &str, args: &[&str], projects: &[&str]) -> Result<()> {

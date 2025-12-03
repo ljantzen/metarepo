@@ -1,7 +1,6 @@
 use super::{add_worktrees, list_all_worktrees, prune_worktrees, remove_worktrees};
 use anyhow::Result;
 use clap::ArgMatches;
-use colored::Colorize;
 use metarepo_core::{
     arg, command, is_interactive, plugin, prompt_multiselect, prompt_text, BasePlugin, MetaPlugin,
     NonInteractiveMode, RuntimeConfig,
@@ -173,7 +172,7 @@ fn handle_add(matches: &ArgMatches, config: &RuntimeConfig) -> Result<()> {
         Some(b) => b.clone(),
         None => {
             if is_interactive() {
-                println!("\n  🌳 {}", "Create a new worktree".cyan().bold());
+                println!("\n  🌳 {}", "Create a new worktree");
                 prompt_text("Branch name or commit", None, false, non_interactive)?
             } else {
                 return Err(anyhow::anyhow!(
@@ -224,7 +223,7 @@ fn handle_add(matches: &ArgMatches, config: &RuntimeConfig) -> Result<()> {
         let project_names: Vec<String> = config.meta_config.projects.keys().cloned().collect();
 
         if !project_names.is_empty() {
-            println!("\n  📋 {}", "Select projects for worktree".cyan().bold());
+            println!("\n  Select projects for worktree");
             let selected = prompt_multiselect("Projects", project_names, vec![], non_interactive)?;
             projects.extend(selected);
         }
@@ -241,6 +240,7 @@ fn handle_add(matches: &ArgMatches, config: &RuntimeConfig) -> Result<()> {
         no_hooks,
         current_project.as_deref(),
         &config.meta_config,
+        config.verbose,
     )?;
     Ok(())
 }
@@ -256,7 +256,7 @@ fn handle_remove(matches: &ArgMatches, config: &RuntimeConfig) -> Result<()> {
         Some(b) => b.clone(),
         None => {
             if is_interactive() {
-                println!("\n  🌳 {}", "Remove a worktree".cyan().bold());
+                println!("\n  🌳 {}", "Remove a worktree");
                 prompt_text(
                     "Branch name or worktree directory",
                     None,
@@ -305,7 +305,7 @@ fn handle_remove(matches: &ArgMatches, config: &RuntimeConfig) -> Result<()> {
         let project_names: Vec<String> = config.meta_config.projects.keys().cloned().collect();
 
         if !project_names.is_empty() {
-            println!("\n  📋 {}", "Select projects for removal".cyan().bold());
+            println!("\n  Select projects for removal");
             let selected = prompt_multiselect("Projects", project_names, vec![], non_interactive)?;
             projects.extend(selected);
         }
@@ -318,6 +318,7 @@ fn handle_remove(matches: &ArgMatches, config: &RuntimeConfig) -> Result<()> {
         &base_path,
         force,
         current_project.as_deref(),
+        config.verbose,
     )?;
     Ok(())
 }

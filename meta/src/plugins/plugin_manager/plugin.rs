@@ -1,6 +1,5 @@
 use anyhow::{Context, Result};
 use clap::ArgMatches;
-use colored::Colorize;
 use metarepo_core::{
     arg, command, is_interactive, plugin, prompt_text, BasePlugin, MetaConfig, MetaPlugin,
     NonInteractiveMode, RuntimeConfig,
@@ -128,7 +127,7 @@ fn handle_add(matches: &ArgMatches, config: &RuntimeConfig) -> Result<()> {
         Some(p) => p.clone(),
         None => {
             if is_interactive() {
-                println!("\n  🔌 {}", "Add a new plugin".cyan().bold());
+                println!("\n  Add a new plugin");
                 prompt_text("Plugin path", None, false, non_interactive)?
             } else {
                 return Err(anyhow::anyhow!(
@@ -333,11 +332,11 @@ fn list_plugins() -> Result<()> {
 }
 
 /// Handler for the update command
-fn handle_update(_matches: &ArgMatches, _config: &RuntimeConfig) -> Result<()> {
-    update_plugins()
+fn handle_update(_matches: &ArgMatches, config: &RuntimeConfig) -> Result<()> {
+    update_plugins(config.verbose)
 }
 
-fn update_plugins() -> Result<()> {
+fn update_plugins(verbose: bool) -> Result<()> {
     println!("Updating plugins...");
 
     // Update plugins from crates.io
@@ -356,9 +355,11 @@ fn update_plugins() -> Result<()> {
                         .context("Failed to run cargo install")?;
 
                     if output.status.success() {
-                        println!("  ✓ Updated {}", name);
+                        if verbose {
+                            println!("  OK: Updated {}", name);
+                        }
                     } else {
-                        error!("  ✗ Failed to update {}", name);
+                        error!("  ERROR: Failed to update {}", name);
                     }
                 }
             }

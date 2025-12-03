@@ -1,6 +1,5 @@
 use super::config::{ComponentRule, DirectoryRule, FileRule, RulesConfig};
 use anyhow::Result;
-use colored::*;
 use std::collections::HashMap;
 
 pub struct RuleCreator {
@@ -24,8 +23,7 @@ impl RuleCreator {
         // Check if rule already exists
         if config.directories.iter().any(|r| r.path == path) {
             println!(
-                "{} Directory rule for '{}' already exists",
-                "Warning:".yellow(),
+                "Warning: Directory rule for '{}' already exists",
                 path
             );
             return Ok(());
@@ -40,14 +38,14 @@ impl RuleCreator {
         config.directories.push(new_rule);
         self.save_config(&config, project)?;
 
-        println!("✅ Created directory rule:");
-        println!("   Path: {}", path.green());
+        println!("OK: Created directory rule:");
+        println!("   Path: {}", path);
         println!(
             "   Required: {}",
             if required {
-                "yes".green()
+                "yes"
             } else {
-                "no".yellow()
+                "no"
             }
         );
         if let Some(desc) = &description {
@@ -69,8 +67,7 @@ impl RuleCreator {
         // Check if rule already exists
         if config.components.iter().any(|r| r.pattern == pattern) {
             println!(
-                "{} Component rule for '{}' already exists",
-                "Warning:".yellow(),
+                "Warning: Component rule for '{}' already exists",
                 pattern
             );
             return Ok(());
@@ -85,11 +82,11 @@ impl RuleCreator {
         config.components.push(new_rule.clone());
         self.save_config(&config, project)?;
 
-        println!("✅ Created component rule:");
-        println!("   Pattern: {}", pattern.green());
+        println!("OK: Created component rule:");
+        println!("   Pattern: {}", pattern);
         println!("   Structure:");
         for item in &new_rule.structure {
-            println!("     - {}", item.cyan());
+            println!("     - {}", item);
         }
         if let Some(desc) = &description {
             println!("   Description: {}", desc);
@@ -110,8 +107,7 @@ impl RuleCreator {
         // Check if rule already exists
         if config.files.iter().any(|r| r.pattern == pattern) {
             println!(
-                "{} File rule for '{}' already exists",
-                "Warning:".yellow(),
+                "Warning: File rule for '{}' already exists",
                 pattern
             );
             return Ok(());
@@ -126,12 +122,12 @@ impl RuleCreator {
         config.files.push(new_rule.clone());
         self.save_config(&config, project)?;
 
-        println!("✅ Created file rule:");
-        println!("   Pattern: {}", pattern.green());
+        println!("OK: Created file rule:");
+        println!("   Pattern: {}", pattern);
         if !new_rule.requires.is_empty() {
             println!("   Requires:");
             for (key, value) in &new_rule.requires {
-                println!("     - {}: {}", key.yellow(), value.cyan());
+                println!("     - {}: {}", key, value);
             }
         }
         if let Some(desc) = &description {
@@ -155,7 +151,7 @@ impl RuleCreator {
         let config_path = self.get_config_path(project)?;
         super::config::save_config(&config_path, config)?;
 
-        println!("📝 Updated rules configuration: {}", config_path.display());
+        println!("Updated rules configuration: {}", config_path.display());
         Ok(())
     }
 
@@ -181,8 +177,8 @@ impl RuleCreator {
 }
 
 pub fn interactive_create_directory_rule() -> Result<()> {
-    println!("{}", "Creating Directory Rule".cyan().bold());
-    println!("{}", "═══════════════════════".blue());
+    println!("Creating Directory Rule");
+    println!("═══════════════════════");
     println!();
 
     print!("Directory path: ");
@@ -216,8 +212,8 @@ pub fn interactive_create_directory_rule() -> Result<()> {
 }
 
 pub fn interactive_create_component_rule() -> Result<()> {
-    println!("{}", "Creating Component Rule".cyan().bold());
-    println!("{}", "═══════════════════════".blue());
+    println!("Creating Component Rule");
+    println!("═══════════════════════");
     println!();
 
     print!("Component pattern (e.g., 'components/**/'): ");
@@ -260,8 +256,8 @@ pub fn interactive_create_component_rule() -> Result<()> {
 }
 
 pub fn interactive_create_file_rule() -> Result<()> {
-    println!("{}", "Creating File Rule".cyan().bold());
-    println!("{}", "══════════════════".blue());
+    println!("Creating File Rule");
+    println!("══════════════════");
     println!();
 
     print!("File pattern (e.g., '**/*.vue'): ");
