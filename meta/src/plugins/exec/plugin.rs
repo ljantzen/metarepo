@@ -77,6 +77,18 @@ impl ExecPlugin {
                             .help("Only iterate over git repositories"),
                     )
                     .arg(
+                        arg("only-uncommitted")
+                            .long("only-uncommitted")
+                            .help("Only run in projects with uncommitted changes")
+                            .conflicts_with("exclude-uncommitted"),
+                    )
+                    .arg(
+                        arg("exclude-uncommitted")
+                            .long("exclude-uncommitted")
+                            .help("Skip projects that have uncommitted changes")
+                            .conflicts_with("only-uncommitted"),
+                    )
+                    .arg(
                         arg("parallel")
                             .long("parallel")
                             .help("Execute commands in parallel"),
@@ -115,7 +127,9 @@ fn handle_exec(matches: &ArgMatches, runtime_config: &RuntimeConfig) -> Result<(
                 || matches.get_one::<String>("include-only").is_some()
                 || matches.get_one::<String>("exclude").is_some()
                 || matches.get_flag("existing-only")
-                || matches.get_flag("git-only");
+                || matches.get_flag("git-only")
+                || matches.get_flag("only-uncommitted")
+                || matches.get_flag("exclude-uncommitted");
 
             // Collect selected projects
             let mut selected_projects = Vec::new();
@@ -156,6 +170,14 @@ fn handle_exec(matches: &ArgMatches, runtime_config: &RuntimeConfig) -> Result<(
 
                 if matches.get_flag("git-only") {
                     iterator = iterator.filter_git_repos();
+                }
+
+                if matches.get_flag("only-uncommitted") {
+                    iterator = iterator.filter_only_uncommitted();
+                }
+
+                if matches.get_flag("exclude-uncommitted") {
+                    iterator = iterator.filter_exclude_uncommitted();
                 }
 
                 let parallel = matches.get_flag("parallel");
@@ -256,6 +278,14 @@ fn handle_exec(matches: &ArgMatches, runtime_config: &RuntimeConfig) -> Result<(
                 iterator = iterator.filter_git_repos();
             }
 
+            if matches.get_flag("only-uncommitted") {
+                iterator = iterator.filter_only_uncommitted();
+            }
+
+            if matches.get_flag("exclude-uncommitted") {
+                iterator = iterator.filter_exclude_uncommitted();
+            }
+
             let parallel = matches.get_flag("parallel");
             let include_main = matches.get_flag("include-main");
             let no_progress = matches.get_flag("no-progress");
@@ -353,6 +383,20 @@ impl MetaPlugin for ExecPlugin {
                     .long("git-only")
                     .help("Only iterate over git repositories")
                     .action(clap::ArgAction::SetTrue),
+            )
+            .arg(
+                clap::Arg::new("only-uncommitted")
+                    .long("only-uncommitted")
+                    .help("Only run in projects with uncommitted changes")
+                    .action(clap::ArgAction::SetTrue)
+                    .conflicts_with("exclude-uncommitted"),
+            )
+            .arg(
+                clap::Arg::new("exclude-uncommitted")
+                    .long("exclude-uncommitted")
+                    .help("Skip projects that have uncommitted changes")
+                    .action(clap::ArgAction::SetTrue)
+                    .conflicts_with("only-uncommitted"),
             )
             .arg(
                 clap::Arg::new("parallel")

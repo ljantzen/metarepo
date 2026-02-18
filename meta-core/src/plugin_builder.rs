@@ -296,6 +296,7 @@ pub struct ArgBuilder {
     takes_value: bool,
     default_value: Option<String>,
     possible_values: Vec<String>,
+    conflicts_with: Vec<String>,
 }
 
 impl ArgBuilder {
@@ -310,6 +311,7 @@ impl ArgBuilder {
             takes_value: false,
             default_value: None,
             possible_values: Vec::new(),
+            conflicts_with: Vec::new(),
         }
     }
 
@@ -355,6 +357,12 @@ impl ArgBuilder {
         self
     }
 
+    /// Set conflicting argument
+    pub fn conflicts_with(mut self, name: impl Into<String>) -> Self {
+        self.conflicts_with.push(name.into());
+        self
+    }
+
     /// Build the clap Arg
     fn build(&self) -> Arg {
         let name: &'static str = Box::leak(self.name.clone().into_boxed_str());
@@ -396,6 +404,11 @@ impl ArgBuilder {
                 .map(|s| Box::leak(s.clone().into_boxed_str()) as &'static str)
                 .collect();
             arg = arg.value_parser(values);
+        }
+
+        for conflict in &self.conflicts_with {
+            let conflict_str: &'static str = Box::leak(conflict.clone().into_boxed_str());
+            arg = arg.conflicts_with(conflict_str);
         }
 
         arg

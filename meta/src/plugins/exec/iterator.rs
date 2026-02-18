@@ -1,5 +1,6 @@
 use metarepo_core::MetaConfig;
 use std::path::{Path, PathBuf};
+use std::process::Command;
 
 #[derive(Debug, Clone)]
 pub struct ProjectInfo {
@@ -27,6 +28,19 @@ impl ProjectInfo {
             return false;
         }
         self.path.join(".git").exists()
+    }
+
+    /// Check if the project has uncommitted changes (staged or unstaged).
+    pub fn has_uncommitted_changes(&self) -> bool {
+        if !self.is_git_repo() {
+            return false;
+        }
+        Command::new("git")
+            .args(["status", "--porcelain"])
+            .current_dir(&self.path)
+            .output()
+            .map(|output| !output.stdout.is_empty())
+            .unwrap_or(false)
     }
 }
 
@@ -100,6 +114,18 @@ impl ProjectIterator {
 
     pub fn filter_git_repos(mut self) -> Self {
         self.projects.retain(|p| p.is_git_repo());
+        self
+    }
+
+    /// Keep only projects that have uncommitted changes.
+    pub fn filter_only_uncommitted(mut self) -> Self {
+        self.projects.retain(|p| p.has_uncommitted_changes());
+        self
+    }
+
+    /// Remove projects that have uncommitted changes.
+    pub fn filter_exclude_uncommitted(mut self) -> Self {
+        self.projects.retain(|p| !p.has_uncommitted_changes());
         self
     }
 
@@ -657,5 +683,170 @@ mod tests {
         assert_eq!(info.tags, tags);
         assert!(info.tags.contains(&"frontend".to_string()));
         assert!(info.tags.contains(&"production".to_string()));
+    }
+
+    /// Helper to initialize a git repo and optionally create uncommitted changes.
+    fn init_git_repo(path: &Path, with_uncommitted: bool) {
+        Command::new("git")
+            .args(["init"])
+            .current_dir(path)
+            .output()
+            .expect("failed to git init");
+        Command::new("git")
+            .args(["config", "user.email", "test@test.com"])
+            .current_dir(path)
+            .output()
+            .unwrap();
+        Command::new("git")
+            .args(["config", "user.name", "Test"])
+            .current_dir(path)
+            .output()
+            .unwrap();
+        // Create an initial commit so the repo is valid
+        fs::write(path.join("README.md"), "init").unwrap();
+        Command::new("git")
+            .args(["add", "."])
+            .current_dir(path)
+            .output()
+            .unwrap();
+        Command::new("git")
+            .args(["commit", "-m", "init"])
+            .current_dir(path)
+            .output()
+            .unwrap();
+        if with_uncommitted {
+            fs::write(path.join("dirty.txt"), "uncommitted").unwrap();
+        }
+    }
+
+    #[test]
+    fn test_has_uncommitted_changes_clean() {
+        let temp_dir = tempdir().unwrap();
+        let project_path = temp_dir.path().join("clean-repo");
+        fs::create_dir(&project_path).unwrap();
+        init_git_repo(&project_path, false);
+
+        let info = ProjectInfo::new(
+            "clean-repo".to_string(),
+            project_path,
+            "url".to_string(),
+            Vec::new(),
+        );
+        assert!(!info.has_uncommitted_changes());
+    }
+
+    #[test]
+    fn test_has_uncommitted_changes_dirty() {
+        let temp_dir = tempdir().unwrap();
+        let project_path = temp_dir.path().join("dirty-repo");
+        fs::create_dir(&project_path).unwrap();
+        init_git_repo(&project_path, true);
+
+        let info = ProjectInfo::new(
+            "dirty-repo".to_string(),
+            project_path,
+            "url".to_string(),
+            Vec::new(),
+        );
+        assert!(info.has_uncommitted_changes());
+    }
+
+    #[test]
+    fn test_has_uncommitted_changes_not_git_repo() {
+        let temp_dir = tempdir().unwrap();
+        let project_path = temp_dir.path().join("not-git");
+        fs::create_dir(&project_path).unwrap();
+
+        let info = ProjectInfo::new(
+            "not-git".to_string(),
+            project_path,
+            "url".to_string(),
+            Vec::new(),
+        );
+        assert!(!info.has_uncommitted_changes());
+    }
+
+    #[test]
+    fn test_filter_only_uncommitted() {
+        let temp_dir = tempdir().unwrap();
+        let mut config = MetaConfig::default();
+        use metarepo_core::ProjectEntry;
+
+        // Create a clean repo
+        let clean_path = temp_dir.path().join("clean");
+        fs::create_dir(&clean_path).unwrap();
+        init_git_repo(&clean_path, false);
+        config.projects.insert(
+            "clean".to_string(),
+            ProjectEntry::Url("url".to_string()),
+        );
+
+        // Create a dirty repo
+        let dirty_path = temp_dir.path().join("dirty");
+        fs::create_dir(&dirty_path).unwrap();
+        init_git_repo(&dirty_path, true);
+        config.projects.insert(
+            "dirty".to_string(),
+            ProjectEntry::Url("url".to_string()),
+        );
+
+        // Create a non-git directory
+        let plain_path = temp_dir.path().join("plain");
+        fs::create_dir(&plain_path).unwrap();
+        config.projects.insert(
+            "plain".to_string(),
+            ProjectEntry::Url("url".to_string()),
+        );
+
+        let iterator =
+            ProjectIterator::new(&config, temp_dir.path()).filter_only_uncommitted();
+        let projects: Vec<ProjectInfo> = iterator.collect();
+
+        assert_eq!(projects.len(), 1);
+        assert_eq!(projects[0].name, "dirty");
+    }
+
+    #[test]
+    fn test_filter_exclude_uncommitted() {
+        let temp_dir = tempdir().unwrap();
+        let mut config = MetaConfig::default();
+        use metarepo_core::ProjectEntry;
+
+        // Create a clean repo
+        let clean_path = temp_dir.path().join("clean");
+        fs::create_dir(&clean_path).unwrap();
+        init_git_repo(&clean_path, false);
+        config.projects.insert(
+            "clean".to_string(),
+            ProjectEntry::Url("url".to_string()),
+        );
+
+        // Create a dirty repo
+        let dirty_path = temp_dir.path().join("dirty");
+        fs::create_dir(&dirty_path).unwrap();
+        init_git_repo(&dirty_path, true);
+        config.projects.insert(
+            "dirty".to_string(),
+            ProjectEntry::Url("url".to_string()),
+        );
+
+        // Create a non-git directory
+        let plain_path = temp_dir.path().join("plain");
+        fs::create_dir(&plain_path).unwrap();
+        config.projects.insert(
+            "plain".to_string(),
+            ProjectEntry::Url("url".to_string()),
+        );
+
+        let iterator =
+            ProjectIterator::new(&config, temp_dir.path()).filter_exclude_uncommitted();
+        let projects: Vec<ProjectInfo> = iterator.collect();
+
+        // clean + plain should remain (plain has no uncommitted since it's not a git repo)
+        let names: Vec<&str> = projects.iter().map(|p| p.name.as_str()).collect();
+        assert_eq!(projects.len(), 2);
+        assert!(names.contains(&"clean"));
+        assert!(names.contains(&"plain"));
+        assert!(!names.contains(&"dirty"));
     }
 }
